@@ -5,6 +5,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,7 +32,9 @@ fun HistoryScreen(
     completedSessions: List<WorkoutSession>,
     exerciseMap: Map<Long, Exercise>,
     getWorkoutExercisesFlow: (Long) -> Flow<List<WorkoutExercise>>,
-    getSetsFlow: (Long) -> Flow<List<ExerciseSet>>
+    getSetsFlow: (Long) -> Flow<List<ExerciseSet>>,
+    onExport: () -> Unit,
+    onShare: () -> Unit
 ) {
     var expandedSessionId by remember { mutableStateOf<Long?>(null) }
 
@@ -37,6 +42,14 @@ fun HistoryScreen(
         topBar = {
             TopAppBar(
                 title = { Text("训练历史", fontWeight = FontWeight.Bold) },
+                actions = {
+                    IconButton(onClick = onExport) {
+                        Icon(Icons.Default.Star, contentDescription = "导出")
+                    }
+                    IconButton(onClick = onShare) {
+                        Icon(Icons.Default.Share, contentDescription = "分享")
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 )

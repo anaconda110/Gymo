@@ -13,6 +13,9 @@ interface GymoDao {
     @Query("SELECT * FROM exercises WHERE isHidden = 0 ORDER BY targetMuscle, name")
     fun getAllExercisesSorted(): Flow<List<Exercise>>
 
+    @Query("SELECT * FROM exercises ORDER BY id ASC")
+    suspend fun getAllExercisesList(): List<Exercise>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertExercise(exercise: Exercise): Long
 
@@ -41,12 +44,18 @@ interface GymoDao {
     @Query("SELECT * FROM workout_sessions WHERE endTime IS NOT NULL ORDER BY startTime DESC")
     fun getCompletedSessions(): Flow<List<WorkoutSession>>
 
+    @Query("SELECT * FROM workout_sessions ORDER BY id ASC")
+    suspend fun getAllSessionsList(): List<WorkoutSession>
+
     // ==================== 3. 训练-动作关联 WorkoutExercise ====================
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertWorkoutExercise(workoutExercise: WorkoutExercise): Long
 
     @Query("SELECT * FROM workout_exercises WHERE sessionId = :sessionId ORDER BY orderIndex ASC")
     fun getWorkoutExercisesForSession(sessionId: Long): Flow<List<WorkoutExercise>>
+
+    @Query("SELECT * FROM workout_exercises ORDER BY id ASC")
+    suspend fun getAllWorkoutExercisesList(): List<WorkoutExercise>
 
     // ==================== 4. 组次 ExerciseSet 操作 ====================
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -60,6 +69,9 @@ interface GymoDao {
 
     @Query("SELECT * FROM exercise_sets WHERE workoutExerciseId = :workoutExerciseId ORDER BY setIndex ASC")
     fun getSetsForWorkoutExercise(workoutExerciseId: Long): Flow<List<ExerciseSet>>
+
+    @Query("SELECT * FROM exercise_sets ORDER BY id ASC")
+    suspend fun getAllSetsList(): List<ExerciseSet>
 
     // ==================== 5. 统计查询 ====================
     @Query("SELECT COUNT(*) FROM workout_sessions WHERE endTime IS NOT NULL")

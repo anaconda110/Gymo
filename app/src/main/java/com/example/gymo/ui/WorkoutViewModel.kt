@@ -1,5 +1,6 @@
 package com.example.gymo.ui
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.gymo.data.Exercise
@@ -15,6 +16,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.io.File
 
 class WorkoutViewModel(private val repository: GymoRepository) : ViewModel() {
 
@@ -161,6 +163,33 @@ class WorkoutViewModel(private val repository: GymoRepository) : ViewModel() {
                 repository.deleteCustomExercise(exercise.id)
             } else {
                 repository.hideExercise(exercise.id)
+            }
+        }
+    }
+
+    // ===== 数据备份 =====
+    fun exportData(context: Context, onResult: (File?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val file = repository.exportToJson(context)
+                onResult(file)
+            } catch (e: Exception) {
+                onResult(null)
+            }
+        }
+    }
+
+    fun shareData(context: Context, file: File) {
+        repository.shareFile(context, file)
+    }
+
+    fun importData(jsonString: String, onResult: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                repository.importFromJson(jsonString)
+                onResult(true)
+            } catch (e: Exception) {
+                onResult(false)
             }
         }
     }

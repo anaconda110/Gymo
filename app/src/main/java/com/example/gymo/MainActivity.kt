@@ -20,6 +20,7 @@ import com.example.gymo.ui.HistoryScreen
 import com.example.gymo.ui.StatsScreen
 import com.example.gymo.ui.WorkoutScreen
 import com.example.gymo.ui.WorkoutViewModel
+import java.io.File
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,6 +44,7 @@ class MainActivity : ComponentActivity() {
             val totalVolume by viewModel.totalVolume.collectAsStateWithLifecycle()
 
             var selectedTab by remember { mutableIntStateOf(0) }
+            var exportedFile by remember { mutableStateOf<File?>(null) }
 
             Scaffold(
                 bottomBar = {
@@ -92,7 +94,17 @@ class MainActivity : ComponentActivity() {
                             completedSessions = completedSessions,
                             exerciseMap = exerciseMap,
                             getWorkoutExercisesFlow = { viewModel.getWorkoutExercisesForSession(it) },
-                            getSetsFlow = { viewModel.getSetsForExercise(it) }
+                            getSetsFlow = { viewModel.getSetsForExercise(it) },
+                            onExport = {
+                                viewModel.exportData(this@MainActivity) { file ->
+                                    exportedFile = file
+                                }
+                            },
+                            onShare = {
+                                exportedFile?.let { file ->
+                                    viewModel.shareData(this@MainActivity, file)
+                                }
+                            }
                         )
                         2 -> StatsScreen(
                             totalWorkoutCount = totalWorkoutCount,
