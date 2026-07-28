@@ -1,8 +1,8 @@
-# Gymo 分支策略
+# Gymo Branch Strategy
 
-Gymo 采用简化的 Git Flow 分支模型，兼顾开发规范与个人项目的轻量需求。
+Gymo uses a simplified Git Flow model, balancing development standards with the lightweight needs of a personal project.
 
-## 分支结构
+## Branch Structure
 
 ```
 main ── develop ── feature/exercise-manager
@@ -12,52 +12,52 @@ main ── develop ── feature/exercise-manager
                   └─ feature/set-reorder
 ```
 
-## 长期分支
+## Long-lived Branches
 
-| 分支 | 用途 | 说明 |
-|------|------|------|
-| `main` | 稳定发布分支 | 只接收合并，始终保持可发布状态；每次合并打 tag |
-| `develop` | 日常开发主线 | 所有 feature 分支从此切出，测试通过后合并回 `main` |
+| Branch | Purpose | Description |
+|--------|---------|-------------|
+| `main` | Stable release branch | Only receives merges; always in a releasable state; tag on each merge |
+| `develop` | Daily development mainline | All feature branches are cut from here; merged back to `main` after testing |
 
-## 功能分支
+## Feature Branches
 
-| 分支 | 功能说明 |
-|------|----------|
-| `feature/exercise-manager` | 动作库管理：增删改自定义动作、肌群分类编辑 |
-| `feature/workout-stats` | 训练数据统计：总容量、训练频率、周/月图表 |
-| `feature/data-backup` | 数据备份与导出：JSON/CSV 导出导入 |
-| `feature/ui-polish` | UI 美化：动画、主题切换、空状态插画 |
-| `feature/set-reorder` | 组次拖拽排序与重排 |
+| Branch | Description |
+|--------|-------------|
+| `feature/exercise-manager` | Exercise library management: add/edit/delete custom exercises, muscle group editing |
+| `feature/workout-stats` | Workout statistics: total volume, training frequency, weekly/monthly charts |
+| `feature/data-backup` | Data backup & export: JSON/CSV export & import |
+| `feature/ui-polish` | UI polish: animations, theme switching, empty state illustrations |
+| `feature/set-reorder` | Set drag-to-reorder |
 
-## 命名规范
+## Naming Conventions
 
-- `feature/<功能名>` — 新功能开发
-- `fix/<问题名>` — Bug 修复
-- `release/<版本号>` — 发布准备（如 `release/v1.0`）
-- `hotfix/<问题名>` — 紧急修复（从 `main` 切出，修完合并回 `main` + `develop`）
+- `feature/<name>` — New feature development
+- `fix/<name>` — Bug fix
+- `release/<version>` — Release preparation (e.g., `release/v1.0`)
+- `hotfix/<name>` — Hotfix (cut from `main`, merged back to `main` + `develop`)
 
-## 工作流
+## Workflow
 
-1. 从 `develop` 切出 feature 分支
+1. Cut a feature branch from `develop`
    ```bash
    git checkout develop
    git checkout -b feature/xxx
    ```
 
-2. 在 feature 分支上开发并提交
+2. Develop and commit on the feature branch
    ```bash
    git add .
-   git commit -m "feat: 描述"
+   git commit -m "feat: description"
    ```
 
-3. 开发完成后合并回 `develop`
+3. Merge back to `develop` when done
    ```bash
    git checkout develop
    git merge feature/xxx
    git push origin develop
    ```
 
-4. `develop` 测试通过后合并回 `main` 并打 tag
+4. Merge `develop` to `main` and tag after testing
    ```bash
    git checkout main
    git merge develop
@@ -65,18 +65,18 @@ main ── develop ── feature/exercise-manager
    git push origin main --tags
    ```
 
-5. 清理已合并的 feature 分支
+5. Clean up merged feature branches
    ```bash
    git branch -d feature/xxx
    git push origin --delete feature/xxx
    ```
 
-## 提交信息规范
+## Commit Message Conventions
 
-- `feat:` 新功能
-- `fix:` Bug 修复
-- `docs:` 文档变更
-- `style:` 代码格式（不影响功能）
-- `refactor:` 重构
-- `test:` 测试相关
-- `chore:` 构建/工具变更
+- `feat:` New feature
+- `fix:` Bug fix
+- `docs:` Documentation changes
+- `style:` Code formatting (no functional impact)
+- `refactor:` Refactoring
+- `test:` Test-related
+- `chore:` Build/tooling changes

@@ -1,29 +1,29 @@
 ---
-name: Bug 报告
-about: 报告一个 Bug 帮助我们改进
+name: Bug Report
+about: Report a bug to help us improve Gymo
 title: "[BUG] "
 labels: bug
 assignees: ''
 ---
 
-## Bug 描述
-<!-- 简要描述遇到了什么问题 -->
+## Bug Description
+<!-- Briefly describe the issue you encountered -->
 
-## 复现步骤
+## Reproduction Steps
 1. 
 2. 
 3. 
 
-## 预期行为
-<!-- 应该发生什么 -->
+## Expected Behavior
+<!-- What should have happened -->
 
-## 实际行为
-<!-- 实际发生了什么 -->
+## Actual Behavior
+<!-- What actually happened -->
 
-## 环境信息
-- 设备：
-- Android 版本：
-- App 版本：
+## Environment
+- Device:
+- Android version:
+- App version:
 
-## 截图/日志
-<!-- 如有截图或 logcat 请附上 -->
+## Screenshots / Logs
+<!-- Attach screenshots or logcat output if available -->
