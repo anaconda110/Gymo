@@ -20,6 +20,7 @@ import com.example.gymo.ui.HistoryScreen
 import com.example.gymo.ui.StatsScreen
 import com.example.gymo.ui.WorkoutScreen
 import com.example.gymo.ui.WorkoutViewModel
+import com.example.gymo.ui.theme.GymoTheme
 import java.io.File
 
 class MainActivity : ComponentActivity() {
@@ -30,88 +31,90 @@ class MainActivity : ComponentActivity() {
         val repository = GymoRepository(database.gymoDao())
 
         setContent {
-            val viewModel: WorkoutViewModel = viewModel(
-                factory = GymoViewModelFactory(repository)
-            )
+            GymoTheme {
+                val viewModel: WorkoutViewModel = viewModel(
+                    factory = GymoViewModelFactory(repository)
+                )
 
-            val currentSession by viewModel.currentSession.collectAsStateWithLifecycle()
-            val allExercises by viewModel.allExercises.collectAsStateWithLifecycle()
-            val workoutExercises by viewModel.workoutExercises.collectAsStateWithLifecycle()
-            val exerciseMap by viewModel.exerciseMap.collectAsStateWithLifecycle()
-            val completedSessions by viewModel.completedSessions.collectAsStateWithLifecycle()
-            val totalWorkoutCount by viewModel.totalWorkoutCount.collectAsStateWithLifecycle()
-            val totalSetCount by viewModel.totalSetCount.collectAsStateWithLifecycle()
-            val totalVolume by viewModel.totalVolume.collectAsStateWithLifecycle()
+                val currentSession by viewModel.currentSession.collectAsStateWithLifecycle()
+                val allExercises by viewModel.allExercises.collectAsStateWithLifecycle()
+                val workoutExercises by viewModel.workoutExercises.collectAsStateWithLifecycle()
+                val exerciseMap by viewModel.exerciseMap.collectAsStateWithLifecycle()
+                val completedSessions by viewModel.completedSessions.collectAsStateWithLifecycle()
+                val totalWorkoutCount by viewModel.totalWorkoutCount.collectAsStateWithLifecycle()
+                val totalSetCount by viewModel.totalSetCount.collectAsStateWithLifecycle()
+                val totalVolume by viewModel.totalVolume.collectAsStateWithLifecycle()
 
-            var selectedTab by remember { mutableIntStateOf(0) }
-            var exportedFile by remember { mutableStateOf<File?>(null) }
+                var selectedTab by remember { mutableIntStateOf(0) }
+                var exportedFile by remember { mutableStateOf<File?>(null) }
 
-            Scaffold(
-                bottomBar = {
-                    NavigationBar {
-                        NavigationBarItem(
-                            selected = selectedTab == 0,
-                            onClick = { selectedTab = 0 },
-                            icon = { Icon(Icons.Default.PlayArrow, contentDescription = "训练") },
-                            label = { Text("训练") }
-                        )
-                        NavigationBarItem(
-                            selected = selectedTab == 1,
-                            onClick = { selectedTab = 1 },
-                            icon = { Icon(Icons.Default.DateRange, contentDescription = "历史") },
-                            label = { Text("历史") }
-                        )
-                        NavigationBarItem(
-                            selected = selectedTab == 2,
-                            onClick = { selectedTab = 2 },
-                            icon = { Icon(Icons.Default.Star, contentDescription = "统计") },
-                            label = { Text("统计") }
-                        )
+                Scaffold(
+                    bottomBar = {
+                        NavigationBar {
+                            NavigationBarItem(
+                                selected = selectedTab == 0,
+                                onClick = { selectedTab = 0 },
+                                icon = { Icon(Icons.Default.PlayArrow, contentDescription = "训练") },
+                                label = { Text("训练") }
+                            )
+                            NavigationBarItem(
+                                selected = selectedTab == 1,
+                                onClick = { selectedTab = 1 },
+                                icon = { Icon(Icons.Default.DateRange, contentDescription = "历史") },
+                                label = { Text("历史") }
+                            )
+                            NavigationBarItem(
+                                selected = selectedTab == 2,
+                                onClick = { selectedTab = 2 },
+                                icon = { Icon(Icons.Default.Star, contentDescription = "统计") },
+                                label = { Text("统计") }
+                            )
+                        }
                     }
-                }
-            ) { innerPadding ->
-                Surface(modifier = Modifier.padding(innerPadding)) {
-                    when (selectedTab) {
-                        0 -> WorkoutScreen(
-                            currentSession = currentSession,
-                            workoutExercises = workoutExercises,
-                            exerciseMap = exerciseMap,
-                            allExercises = allExercises,
-                            onStartWorkout = { viewModel.startWorkout() },
-                            onFinishWorkout = { viewModel.finishWorkout() },
-                            onAddExercise = { viewModel.addExercise(it) },
-                            onAddSet = { viewModel.addSet(it) },
-                            onUpdateSet = { viewModel.updateSet(it) },
-                            onDeleteSet = { viewModel.deleteSet(it) },
-                            onAddCustomExercise = { name, muscle, category ->
-                                viewModel.addCustomExercise(name, muscle, category)
-                            },
-                            onUpdateExercise = { viewModel.updateExercise(it) },
-                            onDeleteExercise = { viewModel.deleteExercise(it) },
-                            getSetsFlow = { viewModel.getSetsForExercise(it) }
-                        )
-                        1 -> HistoryScreen(
-                            completedSessions = completedSessions,
-                            exerciseMap = exerciseMap,
-                            getWorkoutExercisesFlow = { viewModel.getWorkoutExercisesForSession(it) },
-                            getSetsFlow = { viewModel.getSetsForExercise(it) },
-                            onExport = {
-                                viewModel.exportData(this@MainActivity) { file ->
-                                    exportedFile = file
+                ) { innerPadding ->
+                    Surface(modifier = Modifier.padding(innerPadding)) {
+                        when (selectedTab) {
+                            0 -> WorkoutScreen(
+                                currentSession = currentSession,
+                                workoutExercises = workoutExercises,
+                                exerciseMap = exerciseMap,
+                                allExercises = allExercises,
+                                onStartWorkout = { viewModel.startWorkout() },
+                                onFinishWorkout = { viewModel.finishWorkout() },
+                                onAddExercise = { viewModel.addExercise(it) },
+                                onAddSet = { viewModel.addSet(it) },
+                                onUpdateSet = { viewModel.updateSet(it) },
+                                onDeleteSet = { viewModel.deleteSet(it) },
+                                onAddCustomExercise = { name, muscle, category ->
+                                    viewModel.addCustomExercise(name, muscle, category)
+                                },
+                                onUpdateExercise = { viewModel.updateExercise(it) },
+                                onDeleteExercise = { viewModel.deleteExercise(it) },
+                                getSetsFlow = { viewModel.getSetsForExercise(it) }
+                            )
+                            1 -> HistoryScreen(
+                                completedSessions = completedSessions,
+                                exerciseMap = exerciseMap,
+                                getWorkoutExercisesFlow = { viewModel.getWorkoutExercisesForSession(it) },
+                                getSetsFlow = { viewModel.getSetsForExercise(it) },
+                                onExport = {
+                                    viewModel.exportData(this@MainActivity) { file ->
+                                        exportedFile = file
+                                    }
+                                },
+                                onShare = {
+                                    exportedFile?.let { file ->
+                                        viewModel.shareData(this@MainActivity, file)
+                                    }
                                 }
-                            },
-                            onShare = {
-                                exportedFile?.let { file ->
-                                    viewModel.shareData(this@MainActivity, file)
-                                }
-                            }
-                        )
-                        2 -> StatsScreen(
-                            totalWorkoutCount = totalWorkoutCount,
-                            totalSetCount = totalSetCount,
-                            totalVolume = totalVolume,
-                            completedSessions = completedSessions
-                        )
+                            )
+                            2 -> StatsScreen(
+                                totalWorkoutCount = totalWorkoutCount,
+                                totalSetCount = totalSetCount,
+                                totalVolume = totalVolume,
+                                completedSessions = completedSessions
+                            )
+                        }
                     }
                 }
             }
