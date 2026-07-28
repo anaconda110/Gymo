@@ -115,4 +115,34 @@ class WorkoutViewModel(private val repository: GymoRepository) : ViewModel() {
             repository.deleteSet(exerciseSet)
         }
     }
+
+    // ===== 动作库管理 =====
+    fun addCustomExercise(name: String, targetMuscle: String, category: String) {
+        viewModelScope.launch {
+            repository.addExercise(
+                Exercise(
+                    name = name,
+                    targetMuscle = targetMuscle,
+                    category = category,
+                    isCustom = true
+                )
+            )
+        }
+    }
+
+    fun updateExercise(exercise: Exercise) {
+        viewModelScope.launch {
+            repository.updateExercise(exercise)
+        }
+    }
+
+    fun deleteExercise(exercise: Exercise) {
+        viewModelScope.launch {
+            if (exercise.isCustom) {
+                repository.deleteCustomExercise(exercise.id)
+            } else {
+                repository.hideExercise(exercise.id)
+            }
+        }
+    }
 }

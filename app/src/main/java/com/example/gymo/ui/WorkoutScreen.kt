@@ -8,6 +8,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -37,14 +39,23 @@ fun WorkoutScreen(
     onAddSet: (Long) -> Unit,
     onUpdateSet: (ExerciseSet) -> Unit,
     onDeleteSet: (ExerciseSet) -> Unit,
+    onAddCustomExercise: (String, String, String) -> Unit,
+    onUpdateExercise: (Exercise) -> Unit,
+    onDeleteExercise: (Exercise) -> Unit,
     getSetsFlow: (Long) -> Flow<List<ExerciseSet>>
 ) {
     var showSelectDialog by remember { mutableStateOf(false) }
+    var showManageDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Gymo", fontWeight = FontWeight.Bold) },
+                actions = {
+                    IconButton(onClick = { showManageDialog = true }) {
+                        Icon(Icons.Default.Edit, contentDescription = "动作管理")
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
                 )
@@ -58,7 +69,6 @@ fun WorkoutScreen(
                 .padding(16.dp)
         ) {
             if (currentSession == null && workoutExercises.isEmpty()) {
-                // 空状态：点击开始训练（或直接添加动作自动建 Session）
                 Column(
                     modifier = Modifier.align(Alignment.Center),
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -89,7 +99,6 @@ fun WorkoutScreen(
                     }
                 }
             } else {
-                // 进行中的训练
                 Column(modifier = Modifier.fillMaxSize()) {
                     Card(
                         modifier = Modifier
@@ -172,6 +181,18 @@ fun WorkoutScreen(
             onDismiss = { showSelectDialog = false }
         )
     }
+
+    if (showManageDialog) {
+        ExerciseManageDialog(
+            allExercises = allExercises,
+            onAddCustomExercise = { name, muscle, category ->
+                onAddCustomExercise(name, muscle, category)
+            },
+            onUpdateExercise = onUpdateExercise,
+            onDeleteExercise = onDeleteExercise,
+            onDismiss = { showManageDialog = false }
+        )
+    }
 }
 
 @Composable
@@ -205,7 +226,6 @@ fun ExerciseSetCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 用 forEachIndexed 显示序号，避免删除组次后跳号
             sets.forEachIndexed { index, set ->
                 ExerciseSetRow(
                     indexDisplay = index + 1,
@@ -232,7 +252,6 @@ fun ExerciseSetRow(
     onUpdateSet: (ExerciseSet) -> Unit,
     onDeleteSet: (ExerciseSet) -> Unit
 ) {
-    // 按 set.id 记住输入文本态，防止 LazyColumn 重组丢字
     var weightText by remember(set.id) { mutableStateOf(set.weight.toString()) }
     var repsText by remember(set.id) { mutableStateOf(set.reps.toString()) }
 
@@ -243,19 +262,16 @@ fun ExerciseSetRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        // 组次序号（用 indexDisplay 解决删除跳号问题）
         Text(
             text = "$indexDisplay",
             modifier = Modifier.weight(0.8f),
             fontWeight = FontWeight.Bold
         )
 
-        // 重量输入框 (kg)
         OutlinedTextField(
             value = weightText,
             onValueChange = { newText ->
                 weightText = newText
-                // 解析失败仅更新本地态，跳过写库
                 newText.toDoubleOrNull()?.let { newWeight ->
                     if (newWeight != set.weight) {
                         onUpdateSet(set.copy(weight = newWeight))
@@ -269,7 +285,6 @@ fun ExerciseSetRow(
                 .padding(end = 8.dp)
         )
 
-        // 次数输入框
         OutlinedTextField(
             value = repsText,
             onValueChange = { newText ->
@@ -287,7 +302,6 @@ fun ExerciseSetRow(
                 .padding(end = 8.dp)
         )
 
-        // 完成打勾
         Checkbox(
             checked = set.isCompleted,
             onCheckedChange = { isChecked ->
@@ -296,7 +310,6 @@ fun ExerciseSetRow(
             modifier = Modifier.weight(0.8f)
         )
 
-        // 删除该组
         IconButton(
             onClick = { onDeleteSet(set) },
             modifier = Modifier.size(24.dp)
@@ -310,46 +323,244 @@ fun ExerciseSetRow(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExerciseSelectDialog(
     allExercises: List<Exercise>,
     onSelect: (Long) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val grouped = allExercises.groupBy { it.targetMuscle }
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedMuscle by remember { mutableStateOf<String?>(null) }
+
+    val muscles = remember(allExercises) {
+        allExercises.map { it.targetMuscle }.distinct()
+    }
+
+    val filteredExercises = remember(allExercises, searchQuery, selectedMuscle) {
+        allExercises.filter { exercise ->
+            (selectedMuscle == null || exercise.targetMuscle == selectedMuscle) &&
+            (searchQuery.isEmpty() || exercise.name.contains(searchQuery, ignoreCase = true) ||
+                exercise.targetMuscle.contains(searchQuery, ignoreCase = true))
+        }
+    }
+
+    val grouped = filteredExercises.groupBy { it.targetMuscle }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {},
         title = { Text("选择动作", fontWeight = FontWeight.Bold) },
         text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    placeholder = { Text("搜索动作或肌群") },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                )
+
+                if (muscles.isNotEmpty()) {
+                    ScrollableTabRow(
+                        selectedTabIndex = if (selectedMuscle == null) 0 else muscles.indexOf(selectedMuscle) + 1,
+                        edgePadding = 0.dp,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Tab(
+                            selected = selectedMuscle == null,
+                            onClick = { selectedMuscle = null },
+                            text = { Text("全部", fontSize = 12.sp) }
+                        )
+                        muscles.forEach { muscle ->
+                            Tab(
+                                selected = selectedMuscle == muscle,
+                                onClick = { selectedMuscle = muscle },
+                                text = { Text(muscle, fontSize = 12.sp) }
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    grouped.forEach { (muscle, exercises) ->
+                        item {
+                            Text(
+                                text = muscle,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 14.sp,
+                                color = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 8.dp, bottom = 4.dp)
+                            )
+                        }
+                        items(exercises, key = { it.id }) { exercise ->
+                            TextButton(
+                                onClick = { onSelect(exercise.id) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "${exercise.name}  ·  ${exercise.category}",
+                                    modifier = Modifier.fillMaxWidth(),
+                                    fontSize = 15.sp
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    )
+}
+
+@Composable
+fun ExerciseManageDialog(
+    allExercises: List<Exercise>,
+    onAddCustomExercise: (String, String, String) -> Unit,
+    onUpdateExercise: (Exercise) -> Unit,
+    onDeleteExercise: (Exercise) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var showAddDialog by remember { mutableStateOf(false) }
+    var editingExercise by remember { mutableStateOf<Exercise?>(null) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = { showAddDialog = true }) {
+                Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("添加自定义动作")
+            }
+        },
+        title = { Text("动作管理", fontWeight = FontWeight.Bold) },
+        text = {
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                grouped.forEach { (muscle, exercises) ->
-                    item {
-                        Text(
-                            text = muscle,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 8.dp, bottom = 4.dp)
-                        )
-                    }
-                    items(exercises, key = { it.id }) { exercise ->
-                        TextButton(
-                            onClick = { onSelect(exercise.id) },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
+                items(allExercises, key = { it.id }) { exercise ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "${exercise.name}  ·  ${exercise.category}",
-                                modifier = Modifier.fillMaxWidth(),
-                                fontSize = 15.sp
+                                text = exercise.name,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Text(
+                                text = "${exercise.targetMuscle} · ${exercise.category}" +
+                                    if (exercise.isCustom) " · 自定义" else "",
+                                fontSize = 12.sp,
+                                color = Color.Gray
                             )
                         }
+                        IconButton(
+                            onClick = { editingExercise = exercise },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(Icons.Default.Edit, contentDescription = "编辑", tint = MaterialTheme.colorScheme.primary)
+                        }
+                        IconButton(
+                            onClick = { onDeleteExercise(exercise) },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(Icons.Default.Delete, contentDescription = "删除", tint = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                }
+            }
+        }
+    )
+
+    if (showAddDialog) {
+        ExerciseEditDialog(
+            exercise = null,
+            onConfirm = { name, muscle, category ->
+                onAddCustomExercise(name, muscle, category)
+                showAddDialog = false
+            },
+            onDismiss = { showAddDialog = false }
+        )
+    }
+
+    editingExercise?.let { exercise ->
+        ExerciseEditDialog(
+            exercise = exercise,
+            onConfirm = { name, muscle, category ->
+                onUpdateExercise(exercise.copy(name = name, targetMuscle = muscle, category = category))
+                editingExercise = null
+            },
+            onDismiss = { editingExercise = null }
+        )
+    }
+}
+
+@Composable
+fun ExerciseEditDialog(
+    exercise: Exercise?,
+    onConfirm: (String, String, String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var name by remember { mutableStateOf(exercise?.name ?: "") }
+    var targetMuscle by remember { mutableStateOf(exercise?.targetMuscle ?: "") }
+    var category by remember { mutableStateOf(exercise?.category ?: "杠铃") }
+
+    val categories = listOf("杠铃", "哑铃", "器械", "自重")
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (name.isNotBlank() && targetMuscle.isNotBlank()) {
+                        onConfirm(name.trim(), targetMuscle.trim(), category)
+                    }
+                }
+            ) {
+                Text("确定")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("取消") }
+        },
+        title = { Text(if (exercise == null) "添加自定义动作" else "编辑动作", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("动作名称") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                )
+                OutlinedTextField(
+                    value = targetMuscle,
+                    onValueChange = { targetMuscle = it },
+                    label = { Text("目标肌群") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                )
+                Text("动作类型", fontSize = 14.sp, color = Color.Gray, modifier = Modifier.padding(bottom = 4.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    categories.forEach { cat ->
+                        FilterChip(
+                            selected = category == cat,
+                            onClick = { category = cat },
+                            label = { Text(cat, fontSize = 13.sp) }
+                        )
                     }
                 }
             }

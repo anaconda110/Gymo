@@ -11,6 +11,18 @@ class GymoRepository(private val dao: GymoDao) {
         return dao.insertExercise(exercise)
     }
 
+    suspend fun updateExercise(exercise: Exercise) {
+        dao.updateExercise(exercise)
+    }
+
+    suspend fun deleteCustomExercise(id: Long) {
+        dao.deleteCustomExercise(id)
+    }
+
+    suspend fun hideExercise(id: Long) {
+        dao.hideExercise(id)
+    }
+
     // 训练日志 Session 操作
     val latestSession: Flow<WorkoutSession?> = dao.getLatestSession()
 

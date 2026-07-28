@@ -27,19 +27,17 @@ class MainActivity : ComponentActivity() {
         val repository = GymoRepository(database.gymoDao())
 
         setContent {
-            // 使用 Factory 在 Compose 树内部统一创建与管理 ViewModel
             val viewModel: WorkoutViewModel = viewModel(
                 factory = GymoViewModelFactory(repository)
             )
 
-            // 使用生命周期感知的 State 收集（App 切后台时自动暂停收集，节省资源）
             val currentSession by viewModel.currentSession.collectAsStateWithLifecycle()
             val allExercises by viewModel.allExercises.collectAsStateWithLifecycle()
             val workoutExercises by viewModel.workoutExercises.collectAsStateWithLifecycle()
             val exerciseMap by viewModel.exerciseMap.collectAsStateWithLifecycle()
             val completedSessions by viewModel.completedSessions.collectAsStateWithLifecycle()
 
-            var selectedTab by remember { mutableIntStateOf(0) } // 0: 训练, 1: 历史
+            var selectedTab by remember { mutableIntStateOf(0) }
 
             Scaffold(
                 bottomBar = {
@@ -72,6 +70,11 @@ class MainActivity : ComponentActivity() {
                             onAddSet = { viewModel.addSet(it) },
                             onUpdateSet = { viewModel.updateSet(it) },
                             onDeleteSet = { viewModel.deleteSet(it) },
+                            onAddCustomExercise = { name, muscle, category ->
+                                viewModel.addCustomExercise(name, muscle, category)
+                            },
+                            onUpdateExercise = { viewModel.updateExercise(it) },
+                            onDeleteExercise = { viewModel.deleteExercise(it) },
                             getSetsFlow = { viewModel.getSetsForExercise(it) }
                         )
                         1 -> HistoryScreen(

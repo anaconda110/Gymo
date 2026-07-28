@@ -7,11 +7,23 @@ import kotlinx.coroutines.flow.Flow
 interface GymoDao {
 
     // ==================== 1. 动作库操作 ====================
-    @Query("SELECT * FROM exercises ORDER BY id DESC")
+    @Query("SELECT * FROM exercises WHERE isHidden = 0 ORDER BY id DESC")
     fun getAllExercises(): Flow<List<Exercise>>
+
+    @Query("SELECT * FROM exercises WHERE isHidden = 0 ORDER BY targetMuscle, name")
+    fun getAllExercisesSorted(): Flow<List<Exercise>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertExercise(exercise: Exercise): Long
+
+    @Update
+    suspend fun updateExercise(exercise: Exercise)
+
+    @Query("DELETE FROM exercises WHERE id = :id AND isCustom = 1")
+    suspend fun deleteCustomExercise(id: Long)
+
+    @Query("UPDATE exercises SET isHidden = 1 WHERE id = :id")
+    suspend fun hideExercise(id: Long)
 
     // ==================== 2. 训练日志 Session 操作 ====================
     @Insert(onConflict = OnConflictStrategy.REPLACE)
