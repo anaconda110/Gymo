@@ -26,10 +26,8 @@ class GymoRepository(private val dao: GymoDao) {
     // 训练日志 Session 操作
     val latestSession: Flow<WorkoutSession?> = dao.getLatestSession()
 
-    // 当前进行中的训练 Session
     val activeSession: Flow<WorkoutSession?> = dao.getActiveSession()
 
-    // 已完成的训练 Session 列表（用于历史页）
     val completedSessions: Flow<List<WorkoutSession>> = dao.getCompletedSessions()
 
     suspend fun startNewSession(): Long {
@@ -89,4 +87,9 @@ class GymoRepository(private val dao: GymoDao) {
     suspend fun deleteSet(exerciseSet: ExerciseSet) {
         dao.deleteExerciseSet(exerciseSet)
     }
+
+    // ===== 统计查询 =====
+    val totalWorkoutCount: Flow<Int> = dao.getTotalWorkoutCount()
+    val totalSetCount: Flow<Int> = dao.getTotalSetCount()
+    val totalVolume: Flow<Double> = dao.getTotalVolume()
 }

@@ -32,15 +32,12 @@ interface GymoDao {
     @Update
     suspend fun updateWorkoutSession(session: WorkoutSession)
 
-    // 查询最近的一条训练记录
     @Query("SELECT * FROM workout_sessions ORDER BY startTime DESC LIMIT 1")
     fun getLatestSession(): Flow<WorkoutSession?>
 
-    // 查询当前进行中的训练 Session（endTime 为空即代表未结束）
     @Query("SELECT * FROM workout_sessions WHERE endTime IS NULL ORDER BY startTime DESC LIMIT 1")
     fun getActiveSession(): Flow<WorkoutSession?>
 
-    // 查询已完成的训练 Session（endTime 非空），按开始时间倒序
     @Query("SELECT * FROM workout_sessions WHERE endTime IS NOT NULL ORDER BY startTime DESC")
     fun getCompletedSessions(): Flow<List<WorkoutSession>>
 
@@ -48,7 +45,6 @@ interface GymoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertWorkoutExercise(workoutExercise: WorkoutExercise): Long
 
-    // 查询某次训练下的所有关联动作（按顺序）
     @Query("SELECT * FROM workout_exercises WHERE sessionId = :sessionId ORDER BY orderIndex ASC")
     fun getWorkoutExercisesForSession(sessionId: Long): Flow<List<WorkoutExercise>>
 
@@ -64,4 +60,14 @@ interface GymoDao {
 
     @Query("SELECT * FROM exercise_sets WHERE workoutExerciseId = :workoutExerciseId ORDER BY setIndex ASC")
     fun getSetsForWorkoutExercise(workoutExerciseId: Long): Flow<List<ExerciseSet>>
+
+    // ==================== 5. 统计查询 ====================
+    @Query("SELECT COUNT(*) FROM workout_sessions WHERE endTime IS NOT NULL")
+    fun getTotalWorkoutCount(): Flow<Int>
+
+    @Query("SELECT COUNT(*) FROM exercise_sets")
+    fun getTotalSetCount(): Flow<Int>
+
+    @Query("SELECT COALESCE(SUM(weight * reps), 0) FROM exercise_sets WHERE isCompleted = 1")
+    fun getTotalVolume(): Flow<Double>
 }

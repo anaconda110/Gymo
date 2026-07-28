@@ -56,6 +56,25 @@ class WorkoutViewModel(private val repository: GymoRepository) : ViewModel() {
         initialValue = emptyList()
     )
 
+    // ===== 统计 =====
+    val totalWorkoutCount: StateFlow<Int> = repository.totalWorkoutCount.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 0
+    )
+
+    val totalSetCount: StateFlow<Int> = repository.totalSetCount.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 0
+    )
+
+    val totalVolume: StateFlow<Double> = repository.totalVolume.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = 0.0
+    )
+
     fun getSetsForExercise(workoutExerciseId: Long): Flow<List<ExerciseSet>> {
         return repository.getSetsForWorkoutExercise(workoutExerciseId)
     }

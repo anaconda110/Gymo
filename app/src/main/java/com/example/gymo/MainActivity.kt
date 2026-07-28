@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -16,6 +17,7 @@ import com.example.gymo.data.AppDatabase
 import com.example.gymo.data.GymoRepository
 import com.example.gymo.ui.GymoViewModelFactory
 import com.example.gymo.ui.HistoryScreen
+import com.example.gymo.ui.StatsScreen
 import com.example.gymo.ui.WorkoutScreen
 import com.example.gymo.ui.WorkoutViewModel
 
@@ -36,6 +38,9 @@ class MainActivity : ComponentActivity() {
             val workoutExercises by viewModel.workoutExercises.collectAsStateWithLifecycle()
             val exerciseMap by viewModel.exerciseMap.collectAsStateWithLifecycle()
             val completedSessions by viewModel.completedSessions.collectAsStateWithLifecycle()
+            val totalWorkoutCount by viewModel.totalWorkoutCount.collectAsStateWithLifecycle()
+            val totalSetCount by viewModel.totalSetCount.collectAsStateWithLifecycle()
+            val totalVolume by viewModel.totalVolume.collectAsStateWithLifecycle()
 
             var selectedTab by remember { mutableIntStateOf(0) }
 
@@ -53,6 +58,12 @@ class MainActivity : ComponentActivity() {
                             onClick = { selectedTab = 1 },
                             icon = { Icon(Icons.Default.DateRange, contentDescription = "历史") },
                             label = { Text("历史") }
+                        )
+                        NavigationBarItem(
+                            selected = selectedTab == 2,
+                            onClick = { selectedTab = 2 },
+                            icon = { Icon(Icons.Default.Star, contentDescription = "统计") },
+                            label = { Text("统计") }
                         )
                     }
                 }
@@ -82,6 +93,12 @@ class MainActivity : ComponentActivity() {
                             exerciseMap = exerciseMap,
                             getWorkoutExercisesFlow = { viewModel.getWorkoutExercisesForSession(it) },
                             getSetsFlow = { viewModel.getSetsForExercise(it) }
+                        )
+                        2 -> StatsScreen(
+                            totalWorkoutCount = totalWorkoutCount,
+                            totalSetCount = totalSetCount,
+                            totalVolume = totalVolume,
+                            completedSessions = completedSessions
                         )
                     }
                 }
