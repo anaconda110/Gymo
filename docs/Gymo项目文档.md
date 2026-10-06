@@ -1,0 +1,421 @@
+# Gymo 项目文档
+
+> 纯本地、无后端、无账号的力量训练记录 PWA —— 只做记录与分析，数据只留在自己的设备上。
+
+文档版本：v0.5（品牌与许可合规清理） ｜ 最后更新：2026-10-06
+
+---
+
+## 1. 产品定位与目标用户
+
+### 1.1 一句话定位
+Gymo 是一款**纯本地优先（local-first）**的力量训练记录器：精确记录每一组训练、长期积累分析、自由自定义，且数据 100% 留在用户设备，无云、无账号、无追踪。
+
+### 1.2 核心理念
+Gymo 相信**训练质量由「训练容量 = 组数 × 重量 × 次数」决定**——这是力量训练领域通行的衡量方法，比纸笔、Excel 更专门、更灵活、可长期积累的工具才配得上它。Gymo 不做课程、不做社交、不做视频，只做「记录 + 分析」，足够自由。
+
+### 1.3 目标用户
+- 已经懂健身、坚持举铁、想要长期记录与复盘的进阶训练者。
+- 重视数据隐私、不希望训练数据上传云端、希望自行备份与掌控数据的用户。
+- 偏好极简、无干扰、可离线使用的工具型应用的用户。
+
+### 1.4 定位与取舍
+
+Gymo 不试图成为功能最全的训练应用，而是把「纯本地」这条约束贯彻到底。下表是几项关键取舍：
+
+| 维度 | 本项目的选择 | 说明 |
+|---|---|---|
+| 形态 | 纯本地 PWA（浏览器/可安装） | 一套前端代码，桌面与移动浏览器通用，可「添加到主屏幕」 |
+| 数据存储 | **仅本地 IndexedDB** | 无云端副本；换设备靠 JSON 导出/导入 |
+| 账号 | **无账号** | 不收集任何身份信息，打开即用 |
+| 网络 | **完全离线运行**（除构建期 npm） | Service Worker 全量缓存，运行时零网络请求 |
+| 定价 | **免费、开源（MIT）、自托管** | 代码可自由使用、修改、分发 |
+| 范围 | 聚焦记录与分析 | 不做课程、社交、视频、饮食追踪 |
+| 刻意不做 | 可穿戴 / 健康数据集成 | 需平台能力与联网授权，与纯本地承诺冲突，暂不实现 |
+
+---
+
+## 2. 核心功能清单（MVP / 增强分层）
+
+### 2.1 MVP（v0.1，已实现）
+| # | 功能 | 说明 |
+|---|---|---|
+| 1 | 动作库 | 内置 20+ 常见力量动作，按部位/器械分类，支持自定义新增/编辑/删除 |
+| 2 | 训练记录 | 创建训练日 → 添加动作 → 逐组记录 weight×reps（可选 RPE、备注）→ 勾选完成 |
+| 3 | 智能组操作 | 「下一组」自动预填上一组数据；复制组；删除组 |
+| 4 | 组间计时器 | 完成一组后自动弹出休息倒计时；可 ±15s、跳过；振动提示 |
+| 5 | 历史记录 | 按动作查看历史、最大重量、估计 1RM、训练容量；按日期查看训练日志 |
+| 6 | 计划/模板 | 创建可复用训练模板（动作 + 目标组数/次数/重量），一键从模板开始训练 |
+| 7 | 设置 | kg/lb 切换、默认休息时长、暗/亮主题 |
+| 8 | 数据导入导出 | JSON 全量备份/恢复（替换或合并）+ CSV 历史导出 |
+| 9 | PWA | 可安装、Service Worker 全缓存、完全离线运行 |
+
+### 2.2 增强（v0.2，已实现）
+- ✅ **1RM / 容量趋势图表**：动作详情页以纯内联 SVG 绘制「估计 1RM（Epley）」与「训练容量」两条趋势线，含坐标轴、数值标注、可勾选切换显示，无任何图表库依赖。
+- ✅ **组类型标记与统计**：`Set` 新增/扩展 `setType`（normal/superset/dropset/restpause，并保留 warmup/working/drop/failure 用于历史）；ExerciseCard 可逐组打标记；动作详情/历史按类型统计组数；超级组通过 `WorkoutExercise.supersetGroup` 关联并在 UI 上标注关联动作。
+- ✅ **历史·日历视图 + 训练频率热力图**：History 页新增「日历」标签，按月网格显示每天是否训练，按训练量色阶热力图；可点击有训练的日期查看当天训练。
+- ✅ **身体测量记录**：新增「身体」底部导航项与页面，记录体重/体脂率/胸/腰/臀/上臂/大腿围，内联 SVG 体重折线；纳入 JSON 全量备份/导入。
+- ✅ **动作演示图（本地）**：动作可附一张本地演示图，选择本地图片后以 base64 存入 IndexedDB（`Exercise.image`），动作详情/选择器/动作库缩略图展示；不引用任何远程图片。
+- ✅ **计划模板本地文件导出/导入**：Templates 页支持把模板导出为 `.json` 文件下载、从本地 `.json` 文件导入模板（复用 exportImport 基础设施，导入为新建副本）。
+- ⏸ 可穿戴 / 健康数据集成（需平台能力与联网授权，与纯本地承诺冲突，暂不实现）
+
+### 2.3 P0/P1 加固（v0.3，已实现）
+- ✅ **单位换算往返**：新增 `src/lib/unit.ts`（`KG_TO_LB=2.20462`、`convertWeight`/`roundWeight`/`convertAndRound`/`fmtWeight`）；设置页切换单位时在 Dexie 事务内对 `sets.weight`/`templateExercises.targetWeight`/`bodyMeasurements.bodyweight` 批量换算，2 位小数舍入避免浮点漂移，100kg ⇄ 220.46lb 可精确往返还原。
+- ✅ **输入校验 + 即时保存**：ExerciseCard 重量/次数拒绝负数与非数字、RPE 限制 1–10；失焦提交被拒时输入框回退旧值并闪现提示；输入时防抖（450ms）即时落库，未失焦点完成训练也不丢数据。
+- ✅ **日期工具抽取**：新增 `src/lib/date.ts`（`ymd`/`midnightTs`/`dateInputValue`/`parseDateInput`/`friendlyDate` 等），统一各页面重复的本地日期格式化。
+- ✅ **Dexie schema v2 + 升级**：`sets` 增 `setType` 索引、`workoutExercises` 增 `supersetGroup` 索引、`workouts` 增 `durationSec` 索引、`settings` 去掉 `value` 冗余索引；`upgrade()` 为旧 `sets` 行补 `setType='normal'` 默认值，旧数据兼容。
+- ✅ **多 1RM 公式 + RPE 反推**：`src/lib/stats.ts` 支持 Epley / Brzycki / Lombardi / O'Conner 四公式可切换（动作详情页下拉切换并持久化到 settings）；`estimate1RMFromRPE` 以 RPE→RIR 换算反推等价力竭次数；超过 12 次不再用公式估，仅返回顶重。
+- ✅ **组类型选项补全**：`seed.ts` 的 `setTypeOptions` 定稿为 normal/superset/dropset/restpause/warmup/failure，下拉不再提供语义重叠的 working/drop（保留兼容历史展示）。
+- ✅ **历史 N+1 查询优化**：`history.ts` 改为一次性 `toArray` 拉全表后内存聚合，避免每个动作/每次训练各跑一遍 IndexedDB 往返。
+- ✅ **合并导入 id 重映射**：`exportImport.ts` 合并模式对 workouts/workoutExercises/sets/templates/templateExercises/bodyMeasurements 重映射自增 id 并重建外键，不覆盖已有记录；settings 按 key upsert。
+- ✅ **组间计时器声音/振动 + 中途持久化**：`restTimer.ts` 用 Web Audio 振荡器本地合成双声 beep（不加载任何远程资源），结束振动；新增 `setTimerPrefs(sound,vibrate)` 由设置页控制；进行中训练每 15s 把起始时间戳写回并记入 localStorage，便于崩溃/退出后恢复时长。
+- ✅ **路由错误处理**：`router.ts` 对非法 URI 序列、缺失 hash 段做 try/catch 容错；动作/模板详情页对不存在 id 显示「动作不存在/模板不存在」并给返回引导；未知路由显示 404 返回首页。
+- ✅ **Picker 组件去重**：抽取通用底部弹窗 `src/components/Picker.svelte`，各页面复用同一结构（backdrop/slot/双向 open）。
+- ✅ **身体测量多指标趋势**：Body 页对体重/体脂/胸/腰/臀/上臂/大腿围七项各绘内联 SVG 折线（`LineChart`），新增测量后趋势图随数据响应式重算渲染。
+- ✅ **设置页声音/振动/二次确认**：新增结束声音、结束振动开关；清空所有本地数据需先 confirm 再输入「清空」二字二次确认，未输入正确则提示拒绝。
+- ✅ **PWA 图标本地生成**：`scripts/gen-icons.mjs` 用 Node 内置 zlib 纯像素绘制 192/512/maskable-512 PNG（暗底橙杠铃，与 favicon.svg 一致），无任何图像依赖；`vite.config.ts` manifest 声明三档图标。
+- ✅ **测试闭环**：新增 `vitest` 单测（unit/date/stats/exportImport 纯函数）+ Playwright e2e 加固用例（见第 7 节）。
+
+### 2.4 P2 记录+统计增强（v0.4，已实现）
+- ✅ **超级组一键配对**：ExerciseCard 提供「⇄ 与下一动作配对为超级组」按钮，自动与训练日内按 order 的下一个动作配为同一 `supersetGroup`（自动分配新组号），替代手动输数字；UI 标注超级组伙伴动作并提供「解除配对」；超级组内完成一组后组间计时器服务于超级组流转（计时器文案提示「超级组 → 下一动作：X」）。
+- ✅ **单组备注 UI**：ExerciseCard 每组渲染 note 输入框（`WorkoutSet.note` 已有字段），失焦/防抖即时保存。
+- ✅ **下次目标建议**：基于该动作历史 PR/最近一次实际表现，纯本地计算「下次建议重量×次数」（线性递增 +2.5kg / +5lb，或保持巩固），在记录流（ExerciseCard）与动作详情提示。
+- ✅ **PR 时间线/里程碑**：动作详情新增 PR 历史，按日期升序记录每次打破「最大重量 / 估计1RM / 最大容量」的时刻与数值，列表展示。
+- ✅ **周/月聚合 + 年视图**：History 日历新增「年视图」（12 月热力缩略，可翻年），并新增每周/每月容量与频率汇总（内联 SVG 柱状 + 数值卡）。
+- ✅ **趋势图降采样**：TrendChart/LineChart 点数超过上限（默认 60）时降采样（等距抽样并强制保留首末与极值点），避免 SVG 节点爆炸；UI 显示当前渲染点数。
+- ✅ **平均休息时长统计**：`WorkoutSet.completedAt` 在完成一组时记录时间戳，据此计算每次训练及动作的平均组间休息（相邻完成时间差均值），在历史日志与动作详情展示。
+- ✅ **体重-力量关联**：当有身体测量时，动作详情趋势图可叠加体重曲线（次轴独立缩放，虚线），并提供「相对强度(重量/体重)」开关把 1RM 线转换为「1RM/体重」比值。
+
+---
+
+## 3. 数据模型（实体与关系）
+
+存储于 IndexedDB（Dexie.js），无后端。下表字段中 `id` 为主键（自增），带 `?` 为可选。
+
+### 3.1 实体表
+
+**`exercises` 动作字典表**
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | number (PK) | 自增主键 |
+| name | string | 动作名称（中英） |
+| muscleGroup | enum | chest/back/shoulders/biceps/triceps/legs/core/fullbody |
+| equipment | enum | barbell/dumbbell/machine/bodyweight/kettlebell/cable/other |
+| unit | 'kg' \\| 'lb' | 该动作默认单位 |
+| isCustom | boolean | 是否用户自定义（内置为 false） |
+| notes | string? | 备注 |
+| image | string? | 本地演示图（base64 data URL，纯本地无远程资源，可选） |
+| createdAt | number | 创建时间戳 |
+
+**`workouts` 训练日（顶层记录）**
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | number (PK) | |
+| date | number | 训练日期/时间戳 |
+| name | string | 训练日名称 |
+| notes | string? | 训练备注 |
+| durationSec | number? | 训练总时长（秒） |
+| templateId | number? | 可选：由哪个模板创建 |
+| createdAt | number | |
+
+**`workoutExercises` 训练日中的动作实例**
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | number (PK) | |
+| workoutId | number (FK→workouts) | 所属训练日 |
+| exerciseId | number (FK→exercises) | 引用动作字典 |
+| order | number | 在训练日中的排序 |
+| notes | string? | |
+| restSec | number? | 该动作的组间休息（秒） |
+| supersetGroup | number? | 超级组分组号：同 workout 内同号动作互为超级组（0/空 表示无） |
+
+**`sets` 组（属于 WorkoutExercise）**
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | number (PK) | |
+| workoutExerciseId | number (FK→workoutExercises) | 所属动作实例 |
+| order | number | 组序号 |
+| weight | number | 重量 |
+| reps | number | 次数 |
+| rpe | number? | RPE 1–10，可选 |
+| setType | enum | normal/superset/dropset/restpause（v0.2 新增），保留 warmup/working/drop/failure 兼容历史；默认 normal |
+| isCompleted | boolean | 是否完成 |
+| note | string? | 单组备注 |
+| completedAt | number? | 完成该组时的时间戳（v0.4 新增，用于平均组间休息统计） |
+| restSec | number? | 该组实际组间休息(秒)（v0.4 新增，可选；缺省由 completedAt 差值推导） |
+
+**`templates` 训练计划/模板**
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | number (PK) | |
+| name | string | 模板名称 |
+| description | string? | 说明 |
+| createdAt | number | |
+
+**`templateExercises` 模板中的动作**
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | number (PK) | |
+| templateId | number (FK→templates) | |
+| exerciseId | number (FK→exercises) | |
+| order | number | |
+| targetSets | number | 目标组数 |
+| targetReps | number | 目标次数 |
+| targetWeight | number | 起始重量 |
+| restSec | number? | |
+
+**`settings` 应用设置（键值对）**
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| key | string (PK) | 如 unit / defaultRestSec / theme |
+| value | string | 序列化值 |
+
+**`bodyMeasurements` 身体测量（v0.2 已启用）**
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| id | number (PK) | |
+| date | number | 测量日期/时间戳 |
+| bodyweight | number? | 体重（kg） |
+| bodyfat | number? | 体脂率(%) |
+| chest | number? | 胸围(cm) |
+| waist | number? | 腰围(cm) |
+| hip | number? | 臀围(cm) |
+| arm | number? | 上臂围(cm) |
+| thigh | number? | 大腿围(cm) |
+| note | string? | 备注 |
+
+### 3.2 关系（ER 概览）
+
+```
+Exercise (字典) ──< WorkoutExercise >── Workout (训练日)
+                       │
+                       └──< Set (组)
+
+Exercise ──< TemplateExercise >── Template (模板)
+
+Setting (独立键值表)
+BodyMeasurement (独立)
+```
+
+**关系要点：**
+- `Exercise` 是独立动作字典，`WorkoutExercise` 多对一引用它，`Set` 一对多属于 `WorkoutExercise`。
+- `Template`（结构）与 `Workout`（实际记录）分离：从模板开始训练时，复制模板结构生成 `Workout` + `WorkoutExercise` + 预填 `Set`。
+- **训练容量 = Σ(weight × reps)** 为派生值，不单独存储，由 `Set` 聚合计算。
+- **1RM 估算** 支持多公式可切换（v0.3）：Epley `w×(1+r/30)` / Brzycki `w×36/(37-r)` / Lombardi `w×r^0.10` / O'Conner `w×(1+r/40)`；并可由 RPE 反推（`estimate1RMFromRPE` 把 RPE 换算为 RIR 后代入）。超过 12 次仅返回顶重。公式选择持久化于 settings，动作详情页可切换。均为派生值。
+- 删除动作字典项不会级联删除历史 `Set`（保留历史完整性）。
+
+### 3.3 索引（Dexie schema，v2）
+
+仓库自 v0.3 起使用 Dexie schema **version(2)**，相对 v1 的变更：`sets` 增 `setType` 索引、`workoutExercises` 增 `supersetGroup` 索引、`workouts` 增 `durationSec` 索引、`settings` 去掉冗余的 `value` 索引（仅留主键 `key`）。`upgrade()` 为旧 `sets` 行补 `setType='normal'`，可选字段（completedAt/restSec/durationSec）缺省即视为未记录，无需回填。v0.4 新增的 `sets.completedAt`/`sets.restSec` 为可选字段，无需索引、无需 schema 升级即向前兼容。
+
+```
+exercises:          ++id, name, muscleGroup, equipment, isCustom
+workouts:           ++id, date, templateId, createdAt, durationSec
+workoutExercises:   ++id, workoutId, exerciseId, order, supersetGroup
+sets:               ++id, workoutExerciseId, order, isCompleted, setType
+templates:          ++id, name, createdAt
+templateExercises:  ++id, templateId, exerciseId, order
+settings:           key
+bodyMeasurements:   ++id, date
+```
+
+---
+
+## 4. 页面与交互结构
+
+```
+Gymo
+├── 首页（训练 tab）
+│   ├── 「＋ 开始空训练」按钮 → 创建空训练日并进入训练页
+│   ├── 从模板开始（模板 chip 列表）→ 一键开始
+│   └── 训练历史列表（最近 20 条，可点击进入复盘）
+├── 训练进行页（核心）
+│   ├── 顶部训练计时器（训练总时长）
+│   ├── 动作卡列表
+│   │   ├── 每组：重量 + 次数 + RPE + 完成勾选 + 复制/删除 + 单组备注
+│   │   ├── 勾选完成 → 自动弹出组间休息计时器（超级组流转时提示下一动作）
+│   │   ├── 「＋ 下一组」预填上一组 / 首组按「下次目标建议」预填
+│   │   ├── 下次目标建议提示（基于历史线性递增）
+│   │   ├── 超级组：一键「与下一动作配对为超级组」/ 解除配对 / 标注伙伴动作
+│   │   └── 动作菜单（⋮）：调整组间休息 / 超级组编号 / 删除动作
+│   ├── 「＋ 添加动作」→ 动作选择器（搜索 + 部位筛选）
+│   ├── 训练备注
+│   └── 「完成训练」/「放弃并删除」
+├── 动作库 tab
+│   ├── 搜索 + 部位筛选
+│   ├── 动作列表 → 点击进入动作详情（历史 + PR）
+│   └── 新增/编辑动作（名称/部位/器械/单位/备注）
+├── 动作详情页
+│   ├── 本地演示图（base64）
+│   ├── 下次目标建议卡（基于历史线性递增）
+│   ├── PR 卡片（最大重量 / 估计1RM / 总组数 / 总容量 / 平均组间休息）
+│   ├── 趋势图（内联 SVG 双线：1RM + 容量，可切换；支持降采样、体重叠加次轴、相对强度开关）
+│   ├── PR 里程碑时间线（每次打破最大重量/估计1RM/最大容量的日期与数值）
+│   ├── 组类型统计（各类型已完成组数）
+│   └── 历史记录列表（每次训练的组数与顶重/1RM/容量）
+├── 计划 tab
+│   ├── 模板列表 → 开始 / 导出(.json) / 删除
+│   ├── 从本地 .json 文件导入模板
+│   └── 新建模板 → 模板编辑器（动作 + 目标组数/次数/重量）
+├── 历史 tab
+│   ├── 按动作：PR 排行（估计1RM 降序）+ 组类型统计
+│   ├── 按日期：训练日志（含每次训练平均组间休息）
+│   └── 日历：月视图（按月网格 + 训练量热力图）/ 年视图（12 月热力缩略）+ 每周/每月容量与频率汇总（内联 SVG 柱状 + 数值卡）
+├── 身体 tab（v0.2 新增）
+│   ├── 体重趋势（内联 SVG 折线）
+│   └── 历史记录列表（体重/体脂/各围度）+ 增删
+└── 设置 tab
+    ├── 单位 kg/lb（切换时事务内批量换算历史重量，可往返还原）
+    ├── 默认组间休息（秒）
+    ├── 主题（暗/亮）
+    ├── 结束声音（本地 Web Audio beep）/ 结束振动 开关
+    ├── 1RM 公式（Epley/Brzycki/Lombardi/O'Conner，动作详情页亦可切换）
+    ├── 数据：导出 JSON / 导出 CSV / 导入 JSON（替换或合并 id 重映射）
+    └── 危险区：清空所有本地数据（二次确认：confirm + 输入「清空」）
+```
+
+**交互细节：**
+- 组间计时器为全局浮层，完成任一组后自动启动；支持 ±15s、跳过、结束振动提示。
+- 单位在设置页全局切换（kg/lb）；动作可记录各自单位。
+- 移动优先布局，最大宽度 640px 居中，底部固定 tab 导航，暗色优先的极简记录流。
+
+---
+
+## 5. 技术架构与选型理由
+
+### 5.1 技术栈
+| 层 | 选型 | 理由 |
+|---|---|---|
+| 构建 | Vite 5 | Linux 原生、构建快、生态成熟 |
+| 框架 | Svelte 4 | 编译期框架，产物小、运行时开销低，响应式与查询天然契合 |
+| 语言 | TypeScript 5 | 类型安全，长期维护成本低 |
+| 存储 | Dexie.js 4 (IndexedDB) | 简洁 API、索引、响应式查询，足以支撑关系查询与聚合统计 |
+| 离线 | vite-plugin-pwa (Workbox) | Service Worker 全缓存，可安装、完全离线 |
+| 路由 | 自研 hash 路由 | 极简、无依赖、兼容 file:// 打开；非法 URI / 未知路由容错 |
+| 测试 | Vitest 1 + Playwright 1.62 | 纯函数单测（node 环境 + fake-indexeddb）+ 无头 e2e 闭环；仅 devDependency |
+
+### 5.2 纯本地承诺的落地
+- **无后端、无账号**：所有读写仅访问本地 IndexedDB。
+- **无运行时网络**：构建后 Service Worker 缓存全部静态资源；`base: './'` 保证 `file://` 可直接打开。
+- **数据自主**：JSON 全量备份/恢复 + CSV 导出，用户完全掌控数据文件。
+
+### 5.3 备选方案与未来迁移
+- 若未来需要「数据文件直接落盘、可被用户手动备份/版本管理」，可平滑迁移到 **Tauri 2.0 + SQLite**：前端 Svelte 代码几乎全复用，仅替换存储层为 Rust 命令 + SQLite。
+- WASM SQLite（OPFS）可作为浏览器内更关系化的存储升级，但对 MVP 而言 IndexedDB 已足够。
+
+---
+
+## 6. 目录结构
+
+见仓库根目录 `README.md` 的「目录结构」一节。核心分层：
+- `src/lib/`：数据层与业务逻辑（db / types / seed / workout / history / stats / settings / restTimer / exportImport / router / **unit** / **date** / **p2**）。
+- `src/components/`：可复用 UI（ExerciseCard、RestTimer、**TrendChart**、**LineChart**、**Picker** —— 均为内联 SVG 自绘 / 通用弹窗，无图表库 / 无 UI 库）。
+- `src/pages/`：页面级组件（Home / WorkoutPage / Exercises / ExerciseDetail / Templates / TemplateEditor / History / **Body** / SettingsPage）。
+- `public/`：静态资源（favicon、robots、**PWA 图标 icon-192/icon-512/maskable-512**，由 `scripts/gen-icons.mjs` 本地生成）。
+- `docs/`：本文档与 `docs/adr/`（架构决策记录）。
+- `CONTEXT.md`：领域词汇表（仅术语定义，不含实现细节）。
+- `LICENSE` / `THIRD-PARTY-NOTICES.md`：本项目为 MIT 许可；后者列出随产物分发的第三方组件及其许可全文。
+- `e2e/`：Playwright e2e（`gymo.spec.ts` 核心闭环 + 增强；`gymo-extra.spec.ts` P0/P1 加固验收；`gymo-p2a.spec.ts` P2 记录+统计增强验收）。
+- `src/lib/*.test.ts`：Vitest 单测（unit / stats / exportImport / **p2** 纯函数）。
+
+底部导航现为 6 项：训练 / 动作库 / 计划 / 历史 / 身体 / 设置（最大宽度 640px 内均分，布局保持正常）。
+
+---
+
+## 7. 本地构建与运行说明
+
+```bash
+# 1. 安装依赖（首次需联网）
+npm install
+
+# 2. 开发服务器（热更新） http://localhost:5173
+npm run dev
+
+# 3. 类型检查 + 生产构建，产物在 dist/（svelte-check 0 error 0 warning + PWA sw.js/manifest）
+npm run build
+
+# 4. 预览生产构建
+npm run preview
+
+# 5. 单元测试（vitest，纯函数：unit / stats / exportImport）
+npm run test:unit
+
+# 6. e2e 测试（先 build 再用 Playwright 无头跑 preview；缺内核则 npx playwright install chromium）
+npm run test:e2e
+```
+
+**测试脚本说明：**
+- `test:unit`：`vitest run`，覆盖 `src/lib/{unit,stats,exportImport,p2}.test.ts`（单位换算往返、1RM 多公式、合并导入 id 重映射/外键完整性、P2 纯函数：下次目标建议/PR 里程碑/降采样/周月聚合/平均休息/相对强度）。
+- `test:e2e`：`npm run build && playwright test`，含 `gymo.spec.ts`（核心训练闭环 + 增强：趋势图/日历/身体测量/模板导入导出/组类型）、`gymo-extra.spec.ts`（P0/P1 验收：单位换算往返、负数/RPE 越界被拒、合并导入不覆盖且外键完整、CSV 表头与数据行、不存在 id 返回引导、身体测量编辑/删除、超级组伙伴展示、多 1RM 公式切换、清空二次确认）与 `gymo-p2a.spec.ts`（P2 验收：超级组一键配对、单组备注、下次目标建议、PR 时间线、年视图、趋势降采样不超上限、平均休息显示、相对强度开关）。
+
+**产物部署：**
+- `dist/` 为纯静态文件，可放入任意静态服务器，或直接用浏览器打开 `dist/index.html`。
+- 安装为 PWA：在支持 PWA 的浏览器中「添加到主屏幕 / 安装应用」，之后完全离线可用。
+
+**离线构建说明：** 首次 `npm install` 需联网拉取依赖；之后 `npm run build` 可完全离线执行。依赖可缓存至离线 npm registry / verdaccio 以实现全程离线。
+
+---
+
+## 8. 数据备份 / 导入导出策略
+
+| 操作 | 格式 | 范围 | 用途 |
+|---|---|---|---|
+| 导出 JSON | `gymo-backup-<ts>.json` | 全部 8 张表（含 bodyMeasurements） | 完整备份与跨设备迁移 / 恢复 |
+| 导入 JSON | 同上 | 全部表 | 恢复；支持「替换」（清空后导入）或「合并」（**重映射自增 id 并重建外键，不覆盖已有记录**） |
+| 导出模板 | `gymo-template-<名称>-<ts>.json` | 单个模板 + 其动作 | 模板本地文件分享 |
+| 导入模板 | 同上 | 单个模板 | 以新建副本导入，不影响已有模板 |
+| 导出 CSV | `gymo-history-<ts>.csv` | 所有训练组的扁平记录 | 在 Excel/Numbers 中分析历史 |
+| 清空数据 | — | 删除整个 IndexedDB 库 | 重置；**需二次确认（confirm + 输入「清空」二字）** |
+
+**备份建议：** 完成重要训练后或在「设置 → 数据」定期导出 JSON；备份文件由用户自行保管（建议存到网盘之外的本地安全位置）。
+
+---
+
+## 9. 隐私与纯本地承诺
+
+1. **无账号、无登录**：Gymo 不收集任何身份信息。
+2. **无网络请求**：运行时不与任何服务器通信；Service Worker 仅缓存本地静态资源。
+3. **无遥测、无追踪、无广告**。
+4. **数据仅存于本设备浏览器 IndexedDB**：不上云、不同步、不分享。
+5. **用户主权**：所有数据可随时导出；卸载浏览器 / 清除站点数据将删除数据，请自行备份。
+6. **风险提示**：浏览器隐私模式、自动清理、存储压力下 IndexedDB 可能被回收——定期导出 JSON 是唯一可靠的持久化保障。
+
+---
+
+## 10. 风险与后续迭代
+
+### 10.1 已知风险
+| 风险 | 影响 | 缓解 |
+|---|---|---|
+| IndexedDB 被浏览器清理 | 数据丢失 | 提供一键 JSON 备份/恢复；UI 提示定期备份 |
+| 跨浏览器/设备不同步 | 多设备数据割裂 | 通过手动 JSON 导出/导入迁移；未来可考虑可选的本地文件同步 |
+| 单位混用 | 历史记录 kg/lb 混杂 | 全局单位设置 + 动作级单位字段；导出 CSV 标注来源 |
+| Svelte 模板不支持 TS 断言 | 开发约束 | `!` 非空与 `as` 断言需在 `<script>` 内处理，模板用 `?? 0` / 辅助函数 |
+
+### 10.2 后续迭代方向
+1. 图表化：~~1RM / 容量 / 最大重量随时间趋势~~ ✅ v0.2 已用内联 SVG 实现。
+2. ~~组类型与强度技巧（超级组/递减组/休息暂停）的标记与统计~~ ✅ v0.2 已实现。
+3. ~~日历视图与训练频率热力图~~ ✅ v0.2 已实现。
+4. ~~身体测量记录与体重趋势~~ ✅ v0.2 已实现。
+5. ~~计划模板的本地文件分享与导入~~ ✅ v0.2 已实现。
+6. 可选迁移到 Tauri + SQLite，实现文件级数据持久化与版本管理。
+7. ~~1RM 公式可配置（Epley / Brzycki / Lander）~~ ✅ v0.3 已实现 Epley / Brzycki / Lombardi / O'Conner 四公式可切换 + RPE 反推。
+8. ~~动作图片/动画演示（本地资源）~~ ✅ v0.2 已实现本地 base64 演示图。
+9. 可穿戴 / 健康数据集成（需平台能力与联网授权，与纯本地承诺冲突）。
+10. ~~超级组一键配对 / 单组备注 / 下次目标建议 / PR 时间线 / 年视图与周月聚合 / 趋势降采样 / 平均休息统计 / 体重-力量相对强度~~ ✅ v0.4（P2）已全部实现，纯本地、内联 SVG、无新增运行时依赖。
+
+---
+
+## 附：质量门状态
+
+- `npm run build`：✅ 成功（svelte-check 0 errors 0 warnings；PWA 产物含 sw.js / manifest.webmanifest / 三档图标）
+- `npm run dev`：✅ 可启动（localhost:5173）
+- 类型检查：✅ 0 errors 0 warnings
+- `npm run test:unit`：✅ 4 个测试文件 / 42 条用例通过（unit 6 + stats 13 + exportImport 5 + p2 18）
+- `npm run test:e2e`：✅ 19 条用例通过（gymo.spec.ts 2 + gymo-extra.spec.ts 9 + gymo-p2a.spec.ts 8；无头 chromium，约 16s）
+- 第三方品牌字符串：✅ 全仓库文件与 git 历史（含所有对象）均已清零，见 `docs/adr/0001`
+- 许可：✅ MIT（`LICENSE`）+ 第三方声明（`THIRD-PARTY-NOTICES.md`），见 `docs/adr/0002`
+- 无调试临时文件残留：✅ 已删除 `e2e/debug-p2.spec.ts`
+- README 运行说明：✅ 已提供
+
+> 文档与实现一致以仓库实际代码为准。
