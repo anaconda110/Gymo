@@ -86,6 +86,6 @@ app/src/main/java/com/example/gymo/
 
 ## 许可证
 
-本项目基于 [Apache License 2.0](LICENSE) 开源。
+本项目基于 MIT License 开源，见仓库根目录 [LICENSE](../../LICENSE)。
 
 Copyright 2026 anaconda110

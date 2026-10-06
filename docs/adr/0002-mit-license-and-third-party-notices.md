@@ -11,8 +11,8 @@
 
 ## 决策
 
-1. 新增 `LICENSE`（MIT，Copyright (c) 2026 Maka），`package.json` 补 `"license": "MIT"` 与 `"author": "Maka"`，并把描述中的表述与文档统一。
-2. 新增 `THIRD-PARTY-NOTICES.md`，列出随产物分发的组件（Dexie / Svelte / Workbox / vite-plugin-pwa）及其版本、许可与版权行，并附 MIT 与 Apache-2.0 全文及 Dexie 的 NOTICE；仅构建期使用的 devDependencies 单独列出，注明完整文本在 `node_modules/<包名>/LICENSE`。
+1. 新增 `LICENSE`（MIT，Copyright (c) 2026 anaconda110），`package.json` 补 `"license": "MIT"` 与 `"author"` 字段，并把描述中的表述与文档统一。
+2. 新增 `THIRD-PARTY-NOTICES.md`，列出 Web 端产物中分发的第三方组件（Dexie / Svelte / Workbox / vite-plugin-pwa）及其版本、许可与版权行，并附 MIT 与 Apache-2.0 全文及 Dexie 的 NOTICE；仅构建期使用的 devDependencies 单独列出，注明完整文本在 `node_modules/<包名>/LICENSE`。
 3. README 的「许可与定位」改为「许可」，删去与 MIT 冲突的「仅供自用」限制语。
 4. 文档对比表中「免费、开源、自托管」的表述保留，因其在 MIT 之下已成立。
 

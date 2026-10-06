@@ -1,0 +1,18 @@
+# 仓库根 .gitignore —— 各端自己的产物由其目录内的 .gitignore 负责：
+#   apps/web/.gitignore      node_modules/、dist/、test-results/ 等
+#   apps/android/.gitignore  build/、.gradle/、local.properties 等
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 编辑器
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# 环境变量
+.env
+.env.*
+!.env.example
+*.local

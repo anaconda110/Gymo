@@ -111,6 +111,6 @@ apps/web/                     # 本 PWA（仓库根另有 apps/android 与共享
 
 ## 许可
 
-MIT License，见 [LICENSE](./LICENSE)。第三方依赖的许可见 [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md)。
+MIT License，见仓库根目录 [LICENSE](../../LICENSE)。第三方依赖的许可见 [THIRD-PARTY-NOTICES.md](../../THIRD-PARTY-NOTICES.md)。
 
 「训练容量 = 组数 × 重量 × 次数」等概念属力量训练领域的通行方法，本项目是对其的独立实现，与任何同类产品的开发者无关联、未获其授权或背书。

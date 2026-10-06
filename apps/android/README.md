@@ -86,6 +86,6 @@ Or build from command line:
 
 ## License
 
-This project is licensed under the [Apache License 2.0](LICENSE).
+This project is licensed under the MIT License — see the repository root [LICENSE](../../LICENSE).
 
 Copyright 2026 anaconda110

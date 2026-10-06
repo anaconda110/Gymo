@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "license": "MIT",
-  "author": "Maka",
+  "author": "anaconda110",
   "description": "Gymo — 纯本地、无后端、无账号的力量训练记录 PWA",
   "scripts": {
     "dev": "vite",
