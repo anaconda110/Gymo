@@ -73,12 +73,8 @@ npx playwright install chromium
 ## 目录结构
 
 ```
-Gymo/
-├── docs/Gymo项目文档.md      # 完整项目文档
-├── docs/adr/                 # 架构决策记录
-├── CONTEXT.md                # 领域词汇表
-├── LICENSE                   # MIT 许可
-├── THIRD-PARTY-NOTICES.md    # 第三方依赖许可与版权声明
+apps/web/                     # 本 PWA（仓库根另有 apps/android 与共享文档）
+├── docs/项目文档.md           # 完整项目文档
 ├── index.html
 ├── public/                   # favicon、manifest 资源
 ├── src/
