@@ -58,7 +58,7 @@ app/src/main/java/com/example/gymo/
 1. 克隆仓库
    ```bash
    git clone git@github.com:anaconda110/Gymo.git
-   cd Gymo
+   cd Gymo/apps/android
    ```
 
 2. 用 Android Studio 打开项目，等待 Gradle 同步完成

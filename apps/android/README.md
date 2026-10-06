@@ -58,7 +58,7 @@ app/src/main/java/com/example/gymo/
 1. Clone the repository
    ```bash
    git clone git@github.com:anaconda110/Gymo.git
-   cd Gymo
+   cd Gymo/apps/android
    ```
 
 2. Open the project in Android Studio and wait for Gradle sync

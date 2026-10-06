@@ -11,7 +11,7 @@ Welcome to contribute to Gymo! Please search existing issues before submitting a
 
 ## Current Roadmap
 
-Gymo's future requirements are planned in [REQUIREMENTS.md](../REQUIREMENTS.md), prioritized as:
+Gymo's future requirements are planned in [REQUIREMENTS.md](../../apps/android/REQUIREMENTS.md), prioritized as:
 
 - **P0**: Exercise Library Management → `feature/exercise-manager`
 - **P1**: Workout Statistics → `feature/workout-stats`
