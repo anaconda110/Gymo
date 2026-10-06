@@ -1,0 +1,15 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.env
+.env.*
+!.env.example
+
+# 测试产物（Playwright e2e）
+test-results/
+playwright-report/
+playwright/.cache/
