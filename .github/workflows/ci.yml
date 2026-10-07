@@ -68,8 +68,8 @@ jobs:
             echo "$u => $(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$u")"
           done
 
-      - name: 编译 Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+      - name: 编译 Debug APK + 单测
+        run: ./gradlew assembleDebug testDebugUnitTest --stacktrace
 
       - name: 上传 APK 产物
         uses: actions/upload-artifact@v4
