@@ -31,7 +31,9 @@ Gymo 此前是两个互不相干的仓库：
 
 ## 已知遗留（合并时发现，未在本 ADR 中修复）
 
-Android 端 `apps/android/app/src/main/java/com/example/` 下有三个**无 `.kt` 后缀**的游离文件：`g`（内容与 `ui/WorkoutScreen.kt` 相近但含更新的主题切换逻辑）、`gym`（与 `data/GymoRepository.kt` 逐字节相同）、`gymo/ui/Work`（内容为 `WorkoutViewModel` 的增强版，含拖拽排序）。它们不在 Kotlin 源集内，因此不参与编译——即 Android 端**已合并的 UI 打磨与组排序功能并未真正生效**，而 `reorderSets` 也无人调用。这是 Android 端自身的历史问题，与本次合并无关，留待专门修复（见 ADR 0004 或后续工单）。
+Android 端 `apps/android/app/src/main/java/com/example/` 下有三个**无 `.kt` 后缀**的游离文件：`g`（内容与 `ui/WorkoutScreen.kt` 相近但含更新的主题切换逻辑）、`gym`（与 `data/GymoRepository.kt` 逐字节相同）、`gymo/ui/Work`（内容为 `WorkoutViewModel` 的增强版，含拖拽排序）。它们不在 Kotlin 源集内，因此不参与编译——即 Android 端**已合并的 UI 打磨与组排序功能并未真正生效**，而 `reorderSets` 也无人调用。这是 Android 端自身的历史问题，与本次合并无关。
+
+**后续（2026-10-06，已部分修复）**：`g` 的内容恢复为 `ui/WorkoutScreen.kt`，`Work` 的内容恢复为 `ui/WorkoutViewModel.kt`，三个游离文件已删除；`MainActivity` 接线主题切换并以 SharedPreferences 持久化，主题切换按钮自此真正生效。注意：组次拖拽的**手势 UI 从未被任何人编写**——原提交只有数据层 `reorderSets()`，至今没有任何交互入口调用它；实现拖拽属于新功能开发，不在本次修复范围。另：Android 构建未在本环境验证（本机无 Android SDK 平台包，JDK 25 与 Gradle 8.13 不兼容），需在 Android Studio 中构建确认。
 
 ## 备选方案（未采纳）
 

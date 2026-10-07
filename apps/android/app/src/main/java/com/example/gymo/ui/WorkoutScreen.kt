@@ -1,5 +1,12 @@
 package com.example.gymo.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,6 +17,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -42,7 +50,9 @@ fun WorkoutScreen(
     onAddCustomExercise: (String, String, String) -> Unit,
     onUpdateExercise: (Exercise) -> Unit,
     onDeleteExercise: (Exercise) -> Unit,
-    getSetsFlow: (Long) -> Flow<List<ExerciseSet>>
+    getSetsFlow: (Long) -> Flow<List<ExerciseSet>>,
+    onToggleTheme: () -> Unit = {},
+    isDarkTheme: Boolean = false
 ) {
     var showSelectDialog by remember { mutableStateOf(false) }
     var showManageDialog by remember { mutableStateOf(false) }
@@ -52,6 +62,10 @@ fun WorkoutScreen(
             TopAppBar(
                 title = { Text("Gymo", fontWeight = FontWeight.Bold) },
                 actions = {
+                    IconButton(onClick = onToggleTheme) {
+                        Icon(Icons.Default.Star, contentDescription = "切换主题",
+                            tint = if (isDarkTheme) MaterialTheme.colorScheme.primary else Color.Gray)
+                    }
                     IconButton(onClick = { showManageDialog = true }) {
                         Icon(Icons.Default.Edit, contentDescription = "动作管理")
                     }
@@ -150,7 +164,8 @@ fun WorkoutScreen(
                                 setsFlow = getSetsFlow(workoutExercise.id),
                                 onAddSet = { onAddSet(workoutExercise.id) },
                                 onUpdateSet = onUpdateSet,
-                                onDeleteSet = onDeleteSet
+                                onDeleteSet = onDeleteSet,
+                                modifier = Modifier.animateItemPlacement()
                             )
                         }
 
@@ -201,12 +216,13 @@ fun ExerciseSetCard(
     setsFlow: Flow<List<ExerciseSet>>,
     onAddSet: () -> Unit,
     onUpdateSet: (ExerciseSet) -> Unit,
-    onDeleteSet: (ExerciseSet) -> Unit
+    onDeleteSet: (ExerciseSet) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val sets by setsFlow.collectAsStateWithLifecycle(initialValue = emptyList())
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {

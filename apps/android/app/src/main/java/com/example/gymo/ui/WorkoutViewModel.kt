@@ -137,6 +137,21 @@ class WorkoutViewModel(private val repository: GymoRepository) : ViewModel() {
         }
     }
 
+    // ===== 组次拖拽排序 =====
+    fun reorderSets(workoutExerciseId: Long, orderedSetIds: List<Long>) {
+        viewModelScope.launch {
+            val existingSets = repository.getSetsForWorkoutExercise(workoutExerciseId).first()
+            val setMap = existingSets.associateBy { it.id }
+            orderedSetIds.forEachIndexed { newIndex, setId ->
+                setMap[setId]?.let { set ->
+                    if (set.setIndex != newIndex) {
+                        repository.updateSet(set.copy(setIndex = newIndex))
+                    }
+                }
+            }
+        }
+    }
+
     // ===== 动作库管理 =====
     fun addCustomExercise(name: String, targetMuscle: String, category: String) {
         viewModelScope.launch {

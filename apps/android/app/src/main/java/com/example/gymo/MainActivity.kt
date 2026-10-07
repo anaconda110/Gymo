@@ -1,8 +1,10 @@
 package com.example.gymo
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
@@ -23,6 +25,9 @@ import com.example.gymo.ui.WorkoutViewModel
 import com.example.gymo.ui.theme.GymoTheme
 import java.io.File
 
+private const val PREFS_NAME = "gymo_prefs"
+private const val KEY_DARK_THEME = "dark_theme"
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +36,12 @@ class MainActivity : ComponentActivity() {
         val repository = GymoRepository(database.gymoDao())
 
         setContent {
-            GymoTheme {
+            // 主题：首次启动跟随系统；用户在训练页点击切换后持久化覆盖
+            val themePrefs = remember { getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE) }
+            val systemDark = isSystemInDarkTheme()
+            var darkTheme by remember { mutableStateOf(themePrefs.getBoolean(KEY_DARK_THEME, systemDark)) }
+
+            GymoTheme(darkTheme = darkTheme) {
                 val viewModel: WorkoutViewModel = viewModel(
                     factory = GymoViewModelFactory(repository)
                 )
@@ -90,7 +100,12 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onUpdateExercise = { viewModel.updateExercise(it) },
                                 onDeleteExercise = { viewModel.deleteExercise(it) },
-                                getSetsFlow = { viewModel.getSetsForExercise(it) }
+                                getSetsFlow = { viewModel.getSetsForExercise(it) },
+                                onToggleTheme = {
+                                    darkTheme = !darkTheme
+                                    themePrefs.edit().putBoolean(KEY_DARK_THEME, darkTheme).apply()
+                                },
+                                isDarkTheme = darkTheme
                             )
                             1 -> HistoryScreen(
                                 completedSessions = completedSessions,
