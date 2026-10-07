@@ -9,6 +9,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -22,17 +23,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.graphicsLayer
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymo.data.Exercise
 import com.example.gymo.data.ExerciseSet
 import com.example.gymo.data.WorkoutExercise
 import com.example.gymo.data.WorkoutSession
 import kotlinx.coroutines.flow.Flow
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,6 +57,7 @@ fun WorkoutScreen(
     onUpdateExercise: (Exercise) -> Unit,
     onDeleteExercise: (Exercise) -> Unit,
     getSetsFlow: (Long) -> Flow<List<ExerciseSet>>,
+    onReorderSets: (Long, List<Long>) -> Unit,
     onToggleTheme: () -> Unit = {},
     isDarkTheme: Boolean = false
 ) {
@@ -165,6 +172,7 @@ fun WorkoutScreen(
                                 onAddSet = { onAddSet(workoutExercise.id) },
                                 onUpdateSet = onUpdateSet,
                                 onDeleteSet = onDeleteSet,
+                                onReorderSets = { ids -> onReorderSets(workoutExercise.id, ids) },
                                 modifier = Modifier.animateItemPlacement()
                             )
                         }
@@ -217,9 +225,15 @@ fun ExerciseSetCard(
     onAddSet: () -> Unit,
     onUpdateSet: (ExerciseSet) -> Unit,
     onDeleteSet: (ExerciseSet) -> Unit,
+    onReorderSets: (List<Long>) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val sets by setsFlow.collectAsStateWithLifecycle(initialValue = emptyList())
+    // 拖拽期间用本地顺序渲染，松手才落库，落库后由 Flow 回推覆盖
+    var order by remember(sets) { mutableStateOf(sets) }
+    var dragIndex by remember { mutableStateOf<Int?>(null) }
+    var dragOffset by remember { mutableStateOf(0f) }
+    var rowHeightPx by remember { mutableStateOf(0f) }
 
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -242,10 +256,39 @@ fun ExerciseSetCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            sets.forEachIndexed { index, set ->
+            order.forEachIndexed { index, set ->
                 ExerciseSetRow(
                     indexDisplay = index + 1,
                     set = set,
+                    isDragging = index == dragIndex,
+                    dragOffsetY = if (index == dragIndex) dragOffset else 0f,
+                    onDragStarted = { setId ->
+                        dragIndex = order.indexOfFirst { it.id == setId }
+                        dragOffset = 0f
+                    },
+                    onDrag = { amount ->
+                        dragOffset += amount
+                        val from = dragIndex
+                        if (from != null && from in order.indices && rowHeightPx > 0f) {
+                            val target = (from + (dragOffset / rowHeightPx).roundToInt())
+                                .coerceIn(0, order.lastIndex)
+                            if (target != from) {
+                                order = order.toMutableList().apply { add(target, removeAt(from)) }
+                                dragOffset -= (target - from) * rowHeightPx
+                                dragIndex = target
+                            }
+                        }
+                    },
+                    onDragFinished = {
+                        if (order.map { it.id } != sets.map { it.id }) {
+                            onReorderSets(order.map { it.id })
+                        }
+                        dragIndex = null
+                        dragOffset = 0f
+                    },
+                    onRowMeasured = { height ->
+                        if (rowHeightPx == 0f && height > 0) rowHeightPx = height.toFloat()
+                    },
                     onUpdateSet = onUpdateSet,
                     onDeleteSet = onDeleteSet
                 )
@@ -265,19 +308,48 @@ fun ExerciseSetCard(
 fun ExerciseSetRow(
     indexDisplay: Int,
     set: ExerciseSet,
+    isDragging: Boolean,
+    dragOffsetY: Float,
+    onDragStarted: (Long) -> Unit,
+    onDrag: (Float) -> Unit,
+    onDragFinished: () -> Unit,
+    onRowMeasured: (Int) -> Unit,
     onUpdateSet: (ExerciseSet) -> Unit,
     onDeleteSet: (ExerciseSet) -> Unit
 ) {
     var weightText by remember(set.id) { mutableStateOf(set.weight.toString()) }
     var repsText by remember(set.id) { mutableStateOf(set.reps.toString()) }
+    // pointerInput 的 key 必须恒定（换序后节点槽位不变），set.id 在事件发生时读取
+    val currentSetId by rememberUpdatedState(set.id)
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .zIndex(if (isDragging) 1f else 0f)
+            .graphicsLayer { translationY = dragOffsetY }
+            .onSizeChanged { onRowMeasured(it.height) }
             .padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
+        Icon(
+            imageVector = Icons.Default.Menu,
+            contentDescription = "长按拖动排序",
+            tint = Color.Gray,
+            modifier = Modifier
+                .size(20.dp)
+                .pointerInput(Unit) {
+                    detectDragGesturesAfterLongPress(
+                        onDragStart = { onDragStarted(currentSetId) },
+                        onDrag = { change, dragAmount ->
+                            change.consume()
+                            onDrag(dragAmount.y)
+                        },
+                        onDragEnd = { onDragFinished() },
+                        onDragCancel = { onDragFinished() }
+                    )
+                }
+        )
         Text(
             text = "$indexDisplay",
             modifier = Modifier.weight(0.8f),

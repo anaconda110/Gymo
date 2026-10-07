@@ -101,6 +101,9 @@ class MainActivity : ComponentActivity() {
                                 onUpdateExercise = { viewModel.updateExercise(it) },
                                 onDeleteExercise = { viewModel.deleteExercise(it) },
                                 getSetsFlow = { viewModel.getSetsForExercise(it) },
+                                onReorderSets = { workoutExerciseId, orderedSetIds ->
+                                    viewModel.reorderSets(workoutExerciseId, orderedSetIds)
+                                },
                                 onToggleTheme = {
                                     darkTheme = !darkTheme
                                     themePrefs.edit().putBoolean(KEY_DARK_THEME, darkTheme).apply()
