@@ -1,5 +1,7 @@
 # Gymo
 
+[![CI](https://github.com/anaconda110/Gymo/actions/workflows/ci.yml/badge.svg)](https://github.com/anaconda110/Gymo/actions/workflows/ci.yml)
+
 > 力量训练记录器 —— 精确到每一组，数据只留在自己的设备上。
 
 Gymo 是一个**多端项目**：同一套训练记录理念，两个各自独立的客户端实现。两端共享领域模型（动作库、训练日、组、超级组、训练容量、PR），但代码、构建与数据互不依赖——同一仓库，只为便于统一维护与共享文档。
