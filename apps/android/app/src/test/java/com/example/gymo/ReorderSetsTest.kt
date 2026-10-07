@@ -115,7 +115,7 @@ private class FakeGymoDao : GymoDao {
     override suspend fun updateExercise(exercise: Exercise) {}
     override suspend fun deleteCustomExercise(id: Long) {}
     override suspend fun hideExercise(id: Long) {}
-    override fun insertWorkoutSession(session: WorkoutSession): Long = 1L
+    override suspend fun insertWorkoutSession(session: WorkoutSession): Long = 1L
     override suspend fun updateWorkoutSession(session: WorkoutSession) {}
     override fun getLatestSession(): Flow<WorkoutSession?> = flowOf(null)
     override fun getActiveSession(): Flow<WorkoutSession?> = flowOf(null)
