@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -22,7 +24,7 @@ android {
     // 签名：apps/android/keystore.properties（gitignored，见 keystore.properties.example）。
     // 不存在时 release 构建产出未签名 APK——CI 即此模式；正式签名在持有密钥的机器上进行。
     val keystorePropsFile = rootProject.file("keystore.properties")
-    val keystoreProps = java.util.Properties().apply {
+    val keystoreProps = Properties().apply {
         if (keystorePropsFile.exists()) keystorePropsFile.inputStream().use { load(it) }
     }
 
