@@ -2,6 +2,8 @@
 
 This document outlines the roadmap for future Gymo iterations, organized by priority and mapped to feature branches.
 
+> Note: the feature branches referenced below were merged and deleted on 2026-10-06; the implemented work lives in `main` history.
+
 ---
 
 ## P0 — Core Experience

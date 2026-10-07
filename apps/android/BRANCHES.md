@@ -29,6 +29,8 @@ main ── develop ── feature/exercise-manager
 | `feature/ui-polish` | UI polish: animations, theme switching, empty state illustrations |
 | `feature/set-reorder` | Set drag-to-reorder |
 
+> All five feature branches above were merged into `develop` and cleaned up on 2026-10-06 (workflow step 5). Their commits remain reachable from `main`.
+
 ## Naming Conventions
 
 - `feature/<name>` — New feature development

@@ -29,6 +29,8 @@ main ── develop ── feature/exercise-manager
 | `feature/ui-polish` | UI 美化：动画、主题切换、空状态插画 |
 | `feature/set-reorder` | 组次拖拽排序与重排 |
 
+> 以上五个功能分支已于 2026-10-06 全部合并进 `develop` 并按工作流第 5 步清理；提交历史仍可在 `main` 中追溯。
+
 ## 命名规范
 
 - `feature/<功能名>` — 新功能开发
