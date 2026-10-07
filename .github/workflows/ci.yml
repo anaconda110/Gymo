@@ -56,6 +56,18 @@ jobs:
           java-version: 21
           cache: gradle
 
+      - name: 诊断：runner 直探 KSP marker 各源
+        run: |
+          V=2.0.21-1.0.27
+          BASE="com/google/devtools/ksp/com.google.devtools.ksp.gradle.plugin/$V/com.google.devtools.ksp.gradle.plugin-$V.pom"
+          for u in \
+            "https://maven.aliyun.com/repository/public/$BASE" \
+            "https://repo.maven.apache.org/maven2/$BASE" \
+            "https://plugins.gradle.org/m2/$BASE" \
+            "https://dl.google.com/dl/android/maven2/$BASE" ; do
+            echo "$u => $(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$u")"
+          done
+
       - name: 编译 Debug APK
         run: ./gradlew assembleDebug --stacktrace
 
