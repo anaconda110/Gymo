@@ -138,15 +138,19 @@ class WorkoutViewModel(private val repository: GymoRepository) : ViewModel() {
     }
 
     // ===== 组次拖拽排序 =====
+    // setIndex 保持 0 基且连续：addSetToExercise 以 size 分配新索引，
+    // 若此处留下空洞，新增组会与既有组撞索引。
     fun reorderSets(workoutExerciseId: Long, orderedSetIds: List<Long>) {
         viewModelScope.launch {
             val existingSets = repository.getSetsForWorkoutExercise(workoutExerciseId).first()
             val setMap = existingSets.associateBy { it.id }
-            orderedSetIds.forEachIndexed { newIndex, setId ->
+            var nextIndex = 0
+            orderedSetIds.forEach { setId ->
                 setMap[setId]?.let { set ->
-                    if (set.setIndex != newIndex) {
-                        repository.updateSet(set.copy(setIndex = newIndex))
+                    if (set.setIndex != nextIndex) {
+                        repository.updateSet(set.copy(setIndex = nextIndex))
                     }
+                    nextIndex++
                 }
             }
         }
