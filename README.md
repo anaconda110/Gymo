@@ -61,6 +61,7 @@ Android 构建产物（debug APK）在 CI run 页面以 artifact 提供下载。
 
 - [`CONTEXT.md`](./CONTEXT.md) —— 领域词汇表：两端共用的术语及其确切含义（训练日、动作实例、组、超级组、训练容量、三种 PR、相对强度…）。改动领域模型前先读这里。
 - [`docs/adr/`](./docs/adr) —— 架构决策记录。
+- [`docs/BACKUP-FORMAT.md`](./docs/BACKUP-FORMAT.md) —— **跨端备份格式规范**：两个客户端共同的 JSON 信封、字段与取值映射、导入器行为要求。
 - [`docs/RELEASING.md`](./docs/RELEASING.md) —— 发布手册（签名、版本号、Release 流程）。
 - [`CHANGELOG.md`](./CHANGELOG.md) —— 版本变更记录。
 - [`THIRD-PARTY-NOTICES.md`](./THIRD-PARTY-NOTICES.md) —— 第三方依赖许可与版权声明。

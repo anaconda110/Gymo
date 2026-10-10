@@ -54,8 +54,9 @@
     msg = '';
     try {
       const text = await readFileText(file);
-      await importJSON(text, importMode);
+      const res = await importJSON(text, importMode);
       msg = importMode === 'merge' ? '合并导入成功（已重映射 id，未覆盖已有）' : '导入成功';
+      if (res.warnings.length) msg += '；提示：' + res.warnings.join('；');
       await seedIfEmpty();
       await settings.load();
       unit = $settings.unit;
