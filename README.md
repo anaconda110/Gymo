@@ -42,10 +42,27 @@ cd apps/android
 
 如果要跨端迁移，目前需要自行转换格式；这是已知限制，不是配置问题。
 
+## 测试与 CI
+
+每次 push 到 `main` 会自动运行 [CI](https://github.com/anaconda110/Gymo/actions/workflows/ci.yml)，
+两个端并行：
+
+| 端 | 命令 | 内容 |
+|---|---|---|
+| Web | `cd apps/web && npm run check` | svelte-check 类型检查 |
+| Web | `cd apps/web && npm run test:unit` | 42 条纯函数单测（Vitest） |
+| Web | `cd apps/web && npm run test:e2e` | 19 条 Playwright 端到端（构建产物 + 无头 Chromium） |
+| Android | `cd apps/android && ./gradlew assembleDebug testDebugUnitTest` | 编译 + 单测（需本地 SDK） |
+
+Android 构建产物（debug APK）在 CI run 页面以 artifact 提供下载。发布签名
+包见 [`docs/RELEASING.md`](./docs/RELEASING.md)。
+
 ## 共享文档
 
 - [`CONTEXT.md`](./CONTEXT.md) —— 领域词汇表：两端共用的术语及其确切含义（训练日、动作实例、组、超级组、训练容量、三种 PR、相对强度…）。改动领域模型前先读这里。
 - [`docs/adr/`](./docs/adr) —— 架构决策记录。
+- [`docs/RELEASING.md`](./docs/RELEASING.md) —— 发布手册（签名、版本号、Release 流程）。
+- [`CHANGELOG.md`](./CHANGELOG.md) —— 版本变更记录。
 - [`THIRD-PARTY-NOTICES.md`](./THIRD-PARTY-NOTICES.md) —— 第三方依赖许可与版权声明。
 - 各端自己的文档：`apps/android/README_zh.md`、`apps/android/REQUIREMENTS.md`（需求路线图）、`apps/web/docs/项目文档.md`（完整项目文档）。
 

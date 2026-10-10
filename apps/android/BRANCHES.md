@@ -1,84 +1,59 @@
 # Gymo Branch Strategy
 
-Gymo uses a simplified Git Flow model, balancing development standards with the lightweight needs of a personal project.
+Gymo is a single-maintainer project. It uses a **trunk-based** model with CI as
+the gate — heavy Git Flow ceremony (long-lived `develop`, release branches)
+buys nothing here and was retired on 2026-10-10, when `develop` was deleted.
 
-## Branch Structure
+## Branches
 
-```
-main ── develop ── feature/exercise-manager
-                  ├─ feature/workout-stats
-                  ├─ feature/data-backup
-                  ├─ feature/ui-polish
-                  └─ feature/set-reorder
-```
-
-## Long-lived Branches
-
-| Branch | Purpose | Description |
-|--------|---------|-------------|
-| `main` | Stable release branch | Only receives merges; always in a releasable state; tag on each merge |
-| `develop` | Daily development mainline | All feature branches are cut from here; merged back to `main` after testing |
-
-## Feature Branches
-
-| Branch | Description |
-|--------|-------------|
-| `feature/exercise-manager` | Exercise library management: add/edit/delete custom exercises, muscle group editing |
-| `feature/workout-stats` | Workout statistics: total volume, training frequency, weekly/monthly charts |
-| `feature/data-backup` | Data backup & export: JSON/CSV export & import |
-| `feature/ui-polish` | UI polish: animations, theme switching, empty state illustrations |
-| `feature/set-reorder` | Set drag-to-reorder |
-
-> All five feature branches above were merged into `develop` and cleaned up on 2026-10-06 (workflow step 5). Their commits remain reachable from `main`.
-
-## Naming Conventions
-
-- `feature/<name>` — New feature development
-- `fix/<name>` — Bug fix
-- `release/<version>` — Release preparation (e.g., `release/v1.0`)
-- `hotfix/<name>` — Hotfix (cut from `main`, merged back to `main` + `develop`)
+| Branch | Purpose |
+|--------|---------|
+| `main` | The only long-lived branch. Always releaseable; CI must be green. |
+| `feature/<name>` | Optional. For larger or risky changes that benefit from isolation. |
+| `fix/<name>` | Optional. Same idea, for bug fixes. |
 
 ## Workflow
 
-1. Cut a feature branch from `develop`
-   ```bash
-   git checkout develop
-   git checkout -b feature/xxx
-   ```
+1. Small, safe changes — commit directly to `main`. CI runs on every push and
+   must stay green; if it goes red, fix forward immediately.
 
-2. Develop and commit on the feature branch
    ```bash
-   git add .
+   git switch main
+   git pull
+   # edit, test locally, then:
    git commit -m "feat: description"
+   git push
    ```
 
-3. Merge back to `develop` when done
+2. Larger changes — branch, then bring it back with a PR (the PR page shows
+   CI status and gives a place to write down why). For a solo project the PR
+   replaces the review step: write the description as if for a reviewer.
+
    ```bash
-   git checkout develop
-   git merge feature/xxx
-   git push origin develop
+   git switch -c feature/xxx
+   git commit -m "feat: description"
+   git push -u origin feature/xxx
+   gh pr create --fill
    ```
 
-4. Merge `develop` to `main` and tag after testing
-   ```bash
-   git checkout main
-   git merge develop
-   git tag v1.0.0
-   git push origin main --tags
-   ```
+3. Merged branches are deleted; all history stays reachable from `main`.
 
-5. Clean up merged feature branches
-   ```bash
-   git branch -d feature/xxx
-   git push origin --delete feature/xxx
-   ```
+## Release
 
-## Commit Message Conventions
+Tag on `main` and publish a Release with the built artifact — see
+[`docs/RELEASING.md`](../../docs/RELEASING.md).
 
-- `feat:` New feature
-- `fix:` Bug fix
-- `docs:` Documentation changes
-- `style:` Code formatting (no functional impact)
-- `refactor:` Refactoring
-- `test:` Test-related
-- `chore:` Build/tooling changes
+## Commit messages
+
+- `feat:` new feature
+- `fix:` bug fix
+- `docs:` documentation
+- `refactor:` behavior-preserving change
+- `test:` tests
+- `ci:` build/CI configuration
+- `chore:` housekeeping
+
+## Testing gates
+
+Every push to `main` runs `.github/workflows/ci.yml` (see
+[`README.md`](../../README.md#测试与-ci)). Do not push a red `main`.

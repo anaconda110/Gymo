@@ -18,16 +18,16 @@ The Web client (`apps/web`) additionally has: RPE, templates, superset UI,
 body measurements, PR/1RM estimation, unit conversion — see
 `apps/web/docs/项目文档.md`.
 
-## Candidate directions (unprioritized — pick by real need)
+## Candidate directions (tracked as GitHub issues — pick by real need)
 
 1. **Cross-platform backup format** — Android (Room entities) and Web (Dexie
    tables) backups are currently not interchangeable. A shared, versioned
-   envelope would let either client restore the other's data. Record the
-   design in `docs/adr/` when started.
+   envelope would let either client restore the other's data.
+   → see the corresponding issue in the tracker.
 2. **Feature parity** — port a Web-verified feature to Android when it starts
    to matter on the phone.
-3. **Release channel polish** — signed release APKs on GitHub Releases (keystore
-   via local `keystore.properties`, see `docs/adr/0004`), per-tag changelog.
+3. **Release channel polish** — signed release APKs on GitHub Releases per tag.
+   → see the corresponding issue in the tracker; process in `docs/RELEASING.md`.
 
 ## Notes
 
