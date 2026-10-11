@@ -2,143 +2,48 @@ package com.example.gymo.data
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import androidx.core.content.FileProvider
-import org.json.JSONArray
-import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 
+/**
+ * 备份文件的读写与分享。JSON 的编解码在 [BackupCodec]（可在纯 JVM 单测中验证），
+ * 本类只负责文件与事务。
+ *
+ * 导出的文件遵循 docs/BACKUP-FORMAT.md 的信封 v1，两个客户端可互认。
+ */
 class BackupManager(private val dao: GymoDao) {
 
     suspend fun exportToJson(context: Context): File {
-        val exercises = dao.getAllExercisesList()
-        val sessions = dao.getAllSessionsList()
-        val workoutExercises = dao.getAllWorkoutExercisesList()
-        val sets = dao.getAllSetsList()
-
-        val json = JSONObject()
-        json.put("version", 1)
-
-        val exercisesArray = JSONArray()
-        exercises.forEach { e ->
-            exercisesArray.put(JSONObject().apply {
-                put("id", e.id)
-                put("name", e.name)
-                put("targetMuscle", e.targetMuscle)
-                put("category", e.category)
-                put("isCustom", e.isCustom)
-                put("isHidden", e.isHidden)
-            })
-        }
-        json.put("exercises", exercisesArray)
-
-        val sessionsArray = JSONArray()
-        sessions.forEach { s ->
-            sessionsArray.put(JSONObject().apply {
-                put("id", s.id)
-                put("startTime", s.startTime)
-                put("endTime", s.endTime ?: JSONObject.NULL)
-                put("note", s.note ?: JSONObject.NULL)
-            })
-        }
-        json.put("sessions", sessionsArray)
-
-        val workoutExercisesArray = JSONArray()
-        workoutExercises.forEach { we ->
-            workoutExercisesArray.put(JSONObject().apply {
-                put("id", we.id)
-                put("sessionId", we.sessionId)
-                put("exerciseId", we.exerciseId)
-                put("orderIndex", we.orderIndex)
-            })
-        }
-        json.put("workoutExercises", workoutExercisesArray)
-
-        val setsArray = JSONArray()
-        sets.forEach { set ->
-            setsArray.put(JSONObject().apply {
-                put("id", set.id)
-                put("workoutExerciseId", set.workoutExerciseId)
-                put("setIndex", set.setIndex)
-                put("weight", set.weight)
-                put("reps", set.reps)
-                put("type", set.type)
-                put("isCompleted", set.isCompleted)
-            })
-        }
-        json.put("sets", setsArray)
-
+        val json = BackupCodec.encode(
+            exercises = dao.getAllExercisesList(),
+            sessions = dao.getAllSessionsList(),
+            workoutExercises = dao.getAllWorkoutExercisesList(),
+            sets = dao.getAllSetsList()
+        )
         val file = File(context.cacheDir, "gymo_backup.json")
         FileOutputStream(file).use { fos ->
-            fos.write(json.toString(2).toByteArray())
+            fos.write(json.toByteArray())
         }
         return file
     }
 
-    suspend fun importFromJson(jsonString: String) {
-        val json = JSONObject(jsonString)
-
-        val exercises = json.optJSONArray("exercises")
-        if (exercises != null) {
-            for (i in 0 until exercises.length()) {
-                val obj = exercises.getJSONObject(i)
-                val exercise = Exercise(
-                    id = obj.getLong("id"),
-                    name = obj.getString("name"),
-                    targetMuscle = obj.getString("targetMuscle"),
-                    category = obj.getString("category"),
-                    isCustom = obj.getBoolean("isCustom"),
-                    isHidden = obj.optBoolean("isHidden", false)
-                )
-                dao.insertExercise(exercise)
-            }
-        }
-
-        val sessions = json.optJSONArray("sessions")
-        if (sessions != null) {
-            for (i in 0 until sessions.length()) {
-                val obj = sessions.getJSONObject(i)
-                val session = WorkoutSession(
-                    id = obj.getLong("id"),
-                    startTime = obj.getLong("startTime"),
-                    endTime = if (obj.isNull("endTime")) null else obj.getLong("endTime"),
-                    note = if (obj.isNull("note")) null else obj.getString("note")
-                )
-                dao.insertWorkoutSession(session)
-            }
-        }
-
-        val workoutExercises = json.optJSONArray("workoutExercises")
-        if (workoutExercises != null) {
-            for (i in 0 until workoutExercises.length()) {
-                val obj = workoutExercises.getJSONObject(i)
-                val we = WorkoutExercise(
-                    id = obj.getLong("id"),
-                    sessionId = obj.getLong("sessionId"),
-                    exerciseId = obj.getLong("exerciseId"),
-                    orderIndex = obj.getInt("orderIndex")
-                )
-                dao.insertWorkoutExercise(we)
-            }
-        }
-
-        val sets = json.optJSONArray("sets")
-        if (sets != null) {
-            for (i in 0 until sets.length()) {
-                val obj = sets.getJSONObject(i)
-                val set = ExerciseSet(
-                    id = obj.getLong("id"),
-                    workoutExerciseId = obj.getLong("workoutExerciseId"),
-                    setIndex = obj.getInt("setIndex"),
-                    weight = obj.getDouble("weight"),
-                    reps = obj.getInt("reps"),
-                    type = obj.optString("type", "NORMAL"),
-                    isCompleted = obj.getBoolean("isCompleted")
-                )
-                dao.insertExerciseSet(set)
-            }
-        }
+    /**
+     * 导入备份（规范信封或旧版 Android 文件）。
+     * 返回有损点告警——规范 §7 要求在界面上如实告知，不得静默丢弃。
+     * 任何解析错误都会在写入前抛出，不会留下半份数据。
+     */
+    suspend fun importFromJson(jsonString: String): List<String> {
+        // 解析（纯函数，失败即抛，不触碰数据库）
+        val payload = BackupCodec.decode(jsonString)
+        // 写入（单个事务，逐行重分配 id 并重建外键）
+        dao.importPayload(
+            exercises = payload.exercises,
+            sessions = payload.sessions,
+            workoutExercises = payload.workoutExercises,
+            sets = payload.sets
+        )
+        return payload.warnings
     }
 
     fun shareFile(context: Context, file: File) {

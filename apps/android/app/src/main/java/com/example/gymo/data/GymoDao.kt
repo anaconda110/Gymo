@@ -73,7 +73,47 @@ interface GymoDao {
     @Query("SELECT * FROM exercise_sets ORDER BY id ASC")
     suspend fun getAllSetsList(): List<ExerciseSet>
 
-    // ==================== 5. 统计查询 ====================
+    // ==================== 5. 备份导入 ====================
+    /**
+     * 按规范（docs/BACKUP-FORMAT.md §7）导入一份备份：逐行重新分配主键并重建外键，
+     * 不覆盖已有数据；整个导入在单个事务内完成，任何失败都不会留下半份数据。
+     */
+    @Transaction
+    suspend fun importPayload(
+        exercises: List<Exercise>,
+        sessions: List<WorkoutSession>,
+        workoutExercises: List<WorkoutExercise>,
+        sets: List<ExerciseSet>
+    ) {
+        val exerciseIdMap = mutableMapOf<Long, Long>()
+        for (e in exercises) {
+            exerciseIdMap[e.id] = insertExercise(e.copy(id = 0L))
+        }
+        val sessionIdMap = mutableMapOf<Long, Long>()
+        for (s in sessions) {
+            sessionIdMap[s.id] = insertWorkoutSession(s.copy(id = 0L))
+        }
+        val weIdMap = mutableMapOf<Long, Long>()
+        for (we in workoutExercises) {
+            weIdMap[we.id] = insertWorkoutExercise(
+                we.copy(
+                    id = 0L,
+                    sessionId = sessionIdMap[we.sessionId] ?: we.sessionId,
+                    exerciseId = exerciseIdMap[we.exerciseId] ?: we.exerciseId
+                )
+            )
+        }
+        for (set in sets) {
+            insertExerciseSet(
+                set.copy(
+                    id = 0L,
+                    workoutExerciseId = weIdMap[set.workoutExerciseId] ?: set.workoutExerciseId
+                )
+            )
+        }
+    }
+
+    // ==================== 6. 统计查询 ====================
     @Query("SELECT COUNT(*) FROM workout_sessions WHERE endTime IS NOT NULL")
     fun getTotalWorkoutCount(): Flow<Int>
 

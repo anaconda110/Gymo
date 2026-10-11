@@ -202,13 +202,27 @@ class WorkoutViewModel(private val repository: GymoRepository) : ViewModel() {
         repository.shareFile(context, file)
     }
 
-    fun importData(jsonString: String, onResult: (Boolean) -> Unit) {
+    /** 导入备份；成功时回传真实的有损点告警列表，失败时回传异常信息。 */
+    fun importData(jsonString: String, onResult: (Result<List<String>>) -> Unit) {
         viewModelScope.launch {
             try {
-                repository.importFromJson(jsonString)
-                onResult(true)
+                onResult(Result.success(repository.importFromJson(jsonString)))
             } catch (e: Exception) {
-                onResult(false)
+                onResult(Result.failure(e))
+            }
+        }
+    }
+
+    /** 读文件并导入（由界面挑文件后调用）。 */
+    fun importDataFromUri(context: Context, uri: android.net.Uri, onResult: (Result<List<String>>) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val text = context.contentResolver.openInputStream(uri)?.use { input ->
+                    input.bufferedReader().readText()
+                } ?: throw IllegalStateException("无法读取所选文件")
+                onResult(Result.success(repository.importFromJson(text)))
+            } catch (e: Exception) {
+                onResult(Result.failure(e))
             }
         }
     }

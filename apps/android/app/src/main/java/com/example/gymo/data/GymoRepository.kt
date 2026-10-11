@@ -102,8 +102,9 @@ class GymoRepository(private val dao: GymoDao) {
         return backupManager.exportToJson(context)
     }
 
-    suspend fun importFromJson(jsonString: String) {
-        backupManager.importFromJson(jsonString)
+    /** 导入备份，返回有损点告警（规范要求如实告知）。 */
+    suspend fun importFromJson(jsonString: String): List<String> {
+        return backupManager.importFromJson(jsonString)
     }
 
     fun shareFile(context: Context, file: File) {

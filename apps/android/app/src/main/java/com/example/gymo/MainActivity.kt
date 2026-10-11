@@ -3,7 +3,9 @@ package com.example.gymo
 import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -57,6 +59,28 @@ class MainActivity : ComponentActivity() {
 
                 var selectedTab by remember { mutableIntStateOf(0) }
                 var exportedFile by remember { mutableStateOf<File?>(null) }
+                var importMessage by remember { mutableStateOf<String?>(null) }
+
+                // 导入备份：系统文件选择器 → 解析 → 事务写入 → 展示结果与有损点
+                val importLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.OpenDocument()
+                ) { uri ->
+                    if (uri != null) {
+                        viewModel.importDataFromUri(this@MainActivity, uri) { result ->
+                            importMessage = result.fold(
+                                onSuccess = { warnings ->
+                                    if (warnings.isEmpty()) {
+                                        "导入成功（未覆盖已有数据）"
+                                    } else {
+                                        "导入成功（未覆盖已有数据）\n\n注意事项：\n" +
+                                            warnings.joinToString("\n") { "· $it" }
+                                    }
+                                },
+                                onFailure = { e -> "导入失败：" + (e.message ?: "未知错误") }
+                            )
+                        }
+                    }
+                }
 
                 Scaffold(
                     bottomBar = {
@@ -124,7 +148,10 @@ class MainActivity : ComponentActivity() {
                                     exportedFile?.let { file ->
                                         viewModel.shareData(this@MainActivity, file)
                                     }
-                                }
+                                },
+                                onImport = { importLauncher.launch(arrayOf("application/json", "*/*")) },
+                                importMessage = importMessage,
+                                onImportMessageShown = { importMessage = null }
                             )
                             2 -> StatsScreen(
                                 totalWorkoutCount = totalWorkoutCount,

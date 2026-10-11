@@ -20,9 +20,9 @@ body measurements, PR/1RM estimation, unit conversion — see
 
 ## Candidate directions (tracked as GitHub issues — pick by real need)
 
-1. **Cross-platform backup format** — Android (Room entities) and Web (Dexie
-   tables) backups are currently not interchangeable. A shared, versioned
-   envelope would let either client restore the other's data.
+1. **Cross-platform backup format** — spec done (`docs/BACKUP-FORMAT.md`),
+   both clients now read/write envelope v1; remaining: real-device round-trip
+   verification.
    → [issue #1](https://github.com/anaconda110/Gymo/issues/1).
 2. **Feature parity** — port a Web-verified feature to Android when it starts
    to matter on the phone → [issue #3](https://github.com/anaconda110/Gymo/issues/3).

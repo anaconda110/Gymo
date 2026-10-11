@@ -17,8 +17,8 @@ Web 端（`apps/web`）另有：RPE、模板、超级组 UI、身体测量、PR/
 
 ## 候选方向（已登记为 GitHub Issue——按真实需要选取）
 
-1. **跨端备份格式**：目前 Android（Room 实体）与 Web（Dexie 表结构）的备份
-   互不兼容。统一为带版本号的共享信封后，任意一端可恢复另一端的数据。
+1. **跨端备份格式**：规范已定稿（`docs/BACKUP-FORMAT.md`），两端均已按信封 v1
+   读写；剩余为真机双向往返验证。
    → [issue #1](https://github.com/anaconda110/Gymo/issues/1)。
 2. **功能对齐**：当某个 Web 已验证的功能在手机上产生真实需要时移植 → [issue #3](https://github.com/anaconda110/Gymo/issues/3)。
 3. **发布渠道打磨**：按 tag 用签名 release APK 发布 GitHub Releases。

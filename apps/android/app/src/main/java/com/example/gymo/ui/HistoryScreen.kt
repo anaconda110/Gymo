@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
@@ -34,7 +35,10 @@ fun HistoryScreen(
     getWorkoutExercisesFlow: (Long) -> Flow<List<WorkoutExercise>>,
     getSetsFlow: (Long) -> Flow<List<ExerciseSet>>,
     onExport: () -> Unit,
-    onShare: () -> Unit
+    onShare: () -> Unit,
+    onImport: () -> Unit,
+    importMessage: String?,
+    onImportMessageShown: () -> Unit
 ) {
     var expandedSessionId by remember { mutableStateOf<Long?>(null) }
 
@@ -48,6 +52,9 @@ fun HistoryScreen(
                     }
                     IconButton(onClick = onShare) {
                         Icon(Icons.Default.Share, contentDescription = "分享")
+                    }
+                    IconButton(onClick = onImport) {
+                        Icon(Icons.Default.KeyboardArrowDown, contentDescription = "导入备份")
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -121,6 +128,17 @@ fun HistoryScreen(
                 }
             }
         }
+    }
+    // 导入结果（含规范要求如实告知的有损点）以对话框呈现
+    importMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = onImportMessageShown,
+            confirmButton = {
+                TextButton(onClick = onImportMessageShown) { Text("知道了") }
+            },
+            title = { Text("导入结果", fontWeight = FontWeight.Bold) },
+            text = { Text(message) }
+        )
     }
 }
 
