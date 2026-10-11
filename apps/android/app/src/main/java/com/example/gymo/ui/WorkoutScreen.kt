@@ -22,7 +22,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -74,7 +74,7 @@ fun WorkoutScreen(
                 title = { Text("Gymo", fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = onToggleTheme) {
-                        Icon(Icons.Default.Star, contentDescription = "切换主题",
+                        Icon(Icons.Default.Settings, contentDescription = "切换主题",
                             tint = if (isDarkTheme) MaterialTheme.colorScheme.primary else Color.Gray)
                     }
                     IconButton(onClick = { showManageDialog = true }) {

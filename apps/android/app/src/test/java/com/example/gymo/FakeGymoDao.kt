@@ -37,7 +37,6 @@ internal class FakeGymoDao : GymoDao {
 
     // ===== 导入路径用到的方法：保留真实语义（自增 id）=====
     override fun getAllExercises(): Flow<List<Exercise>> = flowOf(exercises.toList())
-    override fun getAllExercisesSorted(): Flow<List<Exercise>> = flowOf(exercises.sortedBy { it.name })
     override suspend fun getAllExercisesList(): List<Exercise> = exercises.toList()
     override suspend fun insertExercise(exercise: Exercise): Long {
         val id = if (exercise.id == 0L) newId() else exercise.id
@@ -67,7 +66,6 @@ internal class FakeGymoDao : GymoDao {
     override suspend fun deleteCustomExercise(id: Long) {}
     override suspend fun hideExercise(id: Long) {}
     override suspend fun updateWorkoutSession(session: WorkoutSession) {}
-    override fun getLatestSession(): Flow<WorkoutSession?> = flowOf(null)
     override fun getActiveSession(): Flow<WorkoutSession?> = flowOf(null)
     override fun getCompletedSessions(): Flow<List<WorkoutSession>> =
         flowOf(sessions.filter { it.endTime != null }.sortedByDescending { it.startTime })

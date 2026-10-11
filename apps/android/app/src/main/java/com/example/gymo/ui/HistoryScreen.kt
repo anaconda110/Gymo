@@ -8,7 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -48,7 +48,7 @@ fun HistoryScreen(
                 title = { Text("训练历史", fontWeight = FontWeight.Bold) },
                 actions = {
                     IconButton(onClick = onExport) {
-                        Icon(Icons.Default.Star, contentDescription = "导出")
+                        Icon(Icons.Default.ExitToApp, contentDescription = "导出")
                     }
                     IconButton(onClick = onShare) {
                         Icon(Icons.Default.Share, contentDescription = "分享")

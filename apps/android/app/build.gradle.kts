@@ -61,6 +61,12 @@ android {
     buildFeatures {
         compose = true
     }
+    testOptions {
+        unitTests {
+            // Robolectric 需要访问 Android 资源
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -77,6 +83,10 @@ dependencies {
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     // 单测中 android.jar 的 org.json 是抛异常的 stub，用真实实现顶替
     testImplementation("org.json:json:20240303")
+    // Room DAO 的真 SQL 测试（JVM 上跑真实 SQLite，无需模拟器）
+    testImplementation("org.robolectric:robolectric:4.17")
+    testImplementation("androidx.test:core:1.6.1")
+    testImplementation("androidx.room:room-testing:2.6.1")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

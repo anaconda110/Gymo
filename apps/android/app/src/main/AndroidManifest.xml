@@ -2,8 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- allowBackup=false：训练数据是"仅存在本设备"的承诺（见 README / CONTEXT.md），
+         系统云备份会把整库上传到用户的云端备份，与该承诺冲突。
+         数据主权由应用内的 JSON 导出/导入兑现（docs/RELEASING.md、docs/BACKUP-FORMAT.md）。 -->
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"

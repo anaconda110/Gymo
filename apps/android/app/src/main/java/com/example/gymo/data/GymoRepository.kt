@@ -28,8 +28,6 @@ class GymoRepository(private val dao: GymoDao) {
     }
 
     // 训练日志 Session 操作
-    val latestSession: Flow<WorkoutSession?> = dao.getLatestSession()
-
     val activeSession: Flow<WorkoutSession?> = dao.getActiveSession()
 
     val completedSessions: Flow<List<WorkoutSession>> = dao.getCompletedSessions()

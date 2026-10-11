@@ -10,9 +10,6 @@ interface GymoDao {
     @Query("SELECT * FROM exercises WHERE isHidden = 0 ORDER BY id DESC")
     fun getAllExercises(): Flow<List<Exercise>>
 
-    @Query("SELECT * FROM exercises WHERE isHidden = 0 ORDER BY targetMuscle, name")
-    fun getAllExercisesSorted(): Flow<List<Exercise>>
-
     @Query("SELECT * FROM exercises ORDER BY id ASC")
     suspend fun getAllExercisesList(): List<Exercise>
 
@@ -34,9 +31,6 @@ interface GymoDao {
 
     @Update
     suspend fun updateWorkoutSession(session: WorkoutSession)
-
-    @Query("SELECT * FROM workout_sessions ORDER BY startTime DESC LIMIT 1")
-    fun getLatestSession(): Flow<WorkoutSession?>
 
     @Query("SELECT * FROM workout_sessions WHERE endTime IS NULL ORDER BY startTime DESC LIMIT 1")
     fun getActiveSession(): Flow<WorkoutSession?>
@@ -117,7 +111,9 @@ interface GymoDao {
     @Query("SELECT COUNT(*) FROM workout_sessions WHERE endTime IS NOT NULL")
     fun getTotalWorkoutCount(): Flow<Int>
 
-    @Query("SELECT COUNT(*) FROM exercise_sets")
+    // 统计口径：只算已完成的组（与 getTotalVolume、CONTEXT.md 的「组」定义一致）。
+    // 原实现未加过滤，会把勾选前的组也计入"总组数"。
+    @Query("SELECT COUNT(*) FROM exercise_sets WHERE isCompleted = 1")
     fun getTotalSetCount(): Flow<Int>
 
     @Query("SELECT COALESCE(SUM(weight * reps), 0) FROM exercise_sets WHERE isCompleted = 1")
