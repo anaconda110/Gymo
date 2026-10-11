@@ -14,7 +14,8 @@
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "gen:icons": "node scripts/gen-icons.mjs",
-    "test:e2e": "npm run build && playwright test"
+    "test:e2e": "npm run build && playwright test",
+    "test:e2e:free-port": "npm run build && GYMO_E2E_PORT=4183 playwright test"
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1",

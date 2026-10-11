@@ -187,3 +187,27 @@ describe('exportJSON round-trip', () => {
     expect(ex[0].name).toBe('已有动作');
   });
 });
+describe('csvCell：转义与公式注入防护', () => {
+  it('普通文本加引号', async () => {
+    const { csvCell } = await import('./exportImport');
+    expect(csvCell('卧推')).toBe('"卧推"');
+  });
+
+  it('内部引号被双写转义', async () => {
+    const { csvCell } = await import('./exportImport');
+    expect(csvCell('他说"再加一组"')).toBe('"他说""再加一组"""');
+  });
+
+  it('公式前缀被前置单引号中和', async () => {
+    const { csvCell } = await import('./exportImport');
+    expect(csvCell('=HYPERLINK("http://evil")')).toBe('"\'=HYPERLINK(""http://evil"")"');
+    expect(csvCell('+1+1')).toBe('"\'+1+1"');
+    expect(csvCell('-2')).toBe('"\'-2"');
+    expect(csvCell('@SUM(A1)')).toBe('"\'@SUM(A1)"');
+  });
+
+  it('数值正常文本化（负数也被中和，因为可能被当公式）', async () => {
+    const { csvCell } = await import('./exportImport');
+    expect(csvCell(60)).toBe('"60"');
+  });
+});

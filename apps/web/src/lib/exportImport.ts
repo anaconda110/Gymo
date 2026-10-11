@@ -328,6 +328,16 @@ export async function importJSON(
   })) as ImportResult;
 }
 
+// CSV 单元格：引号转义 + 防公式注入。
+// 以 = + - @ 或制表符/回车开头的文本会被 Excel/Numbers 当作公式执行，
+// 前置单引号使其保持文本（OWASP 建议的做法）。数值列不受影响。
+export function csvCell(value: string | number): string {
+  const raw = String(value ?? '');
+  const needsGuard = /^[=+\-@\t\r]/.test(raw);
+  const guarded = needsGuard ? `'${raw}` : raw;
+  return `"${guarded.replace(/"/g, '""')}"`;
+}
+
 // CSV 导出：按动作的历史记录
 export async function exportHistoryCSV(): Promise<string> {
   const workouts = await db.workouts.toArray();
@@ -342,19 +352,18 @@ export async function exportHistoryCSV(): Promise<string> {
     for (const we of view.exercises) {
       const exName = we.exercise?.name ?? '(已删除动作)';
       for (const s of we.sets) {
-        const note = (s.note ?? '').replace(/"/g, '""');
         rows.push(
           [
-            dateStr,
-            `"${w.name}"`,
-            `"${exName}"`,
+            csvCell(dateStr),
+            csvCell(w.name),
+            csvCell(exName),
             s.order + 1,
             s.weight,
             s.reps,
             s.rpe ?? '',
-            s.setType,
+            csvCell(s.setType),
             s.isCompleted ? 1 : 0,
-            `"${note}"`
+            csvCell(s.note ?? '')
           ].join(',')
         );
       }
