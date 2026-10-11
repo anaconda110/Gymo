@@ -1,16 +1,10 @@
 package com.example.gymo
 
-import com.example.gymo.data.Exercise
 import com.example.gymo.data.ExerciseSet
-import com.example.gymo.data.GymoDao
 import com.example.gymo.data.GymoRepository
-import com.example.gymo.data.WorkoutExercise
-import com.example.gymo.data.WorkoutSession
 import com.example.gymo.ui.WorkoutViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -84,48 +78,4 @@ class ReorderSetsTest {
         assertEquals(0, byId[1L]!!.setIndex)
         assertEquals(1, byId[2L]!!.setIndex)
     }
-}
-
-/** 内存版 DAO：只实现 reorderSets 路径用到的方法，其余空实现。 */
-private class FakeGymoDao : GymoDao {
-    val sets = mutableListOf<ExerciseSet>()
-    var updateCount = 0
-
-    override fun getSetsForWorkoutExercise(workoutExerciseId: Long): Flow<List<ExerciseSet>> =
-        flowOf(sets.filter { it.workoutExerciseId == workoutExerciseId }.sortedBy { it.setIndex })
-
-    override suspend fun updateExerciseSet(exerciseSet: ExerciseSet) {
-        updateCount++
-        sets.replaceAll { if (it.id == exerciseSet.id) exerciseSet else it }
-    }
-
-    override suspend fun insertExerciseSet(exerciseSet: ExerciseSet) {
-        sets.add(exerciseSet)
-    }
-
-    override suspend fun deleteExerciseSet(exerciseSet: ExerciseSet) {
-        sets.removeIf { it.id == exerciseSet.id }
-    }
-
-    // ===== 与被测路径无关，最小实现 =====
-    override fun getAllExercises(): Flow<List<Exercise>> = flowOf(emptyList())
-    override fun getAllExercisesSorted(): Flow<List<Exercise>> = flowOf(emptyList())
-    override suspend fun getAllExercisesList(): List<Exercise> = emptyList()
-    override suspend fun insertExercise(exercise: Exercise): Long = 1L
-    override suspend fun updateExercise(exercise: Exercise) {}
-    override suspend fun deleteCustomExercise(id: Long) {}
-    override suspend fun hideExercise(id: Long) {}
-    override suspend fun insertWorkoutSession(session: WorkoutSession): Long = 1L
-    override suspend fun updateWorkoutSession(session: WorkoutSession) {}
-    override fun getLatestSession(): Flow<WorkoutSession?> = flowOf(null)
-    override fun getActiveSession(): Flow<WorkoutSession?> = flowOf(null)
-    override fun getCompletedSessions(): Flow<List<WorkoutSession>> = flowOf(emptyList())
-    override suspend fun getAllSessionsList(): List<WorkoutSession> = emptyList()
-    override suspend fun insertWorkoutExercise(workoutExercise: WorkoutExercise): Long = 1L
-    override fun getWorkoutExercisesForSession(sessionId: Long): Flow<List<WorkoutExercise>> = flowOf(emptyList())
-    override suspend fun getAllWorkoutExercisesList(): List<WorkoutExercise> = emptyList()
-    override suspend fun getAllSetsList(): List<ExerciseSet> = sets.toList()
-    override fun getTotalWorkoutCount(): Flow<Int> = flowOf(0)
-    override fun getTotalSetCount(): Flow<Int> = flowOf(0)
-    override fun getTotalVolume(): Flow<Double> = flowOf(0.0)
 }

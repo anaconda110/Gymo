@@ -284,3 +284,41 @@ test.describe('Gymo P0/P1 修复验收', () => {
     await expect(page.getByText('暂无训练')).toBeVisible();
   });
 });
+
+test('跨端：导入 Android 端真实导出的备份', async ({ page }) => {
+  await page.goto('/#/settings');
+  // 设置页标题（用 heading 角色避免与底部导航的「设置」按钮同名冲突）
+  await expect(page.getByRole('heading', { name: '设置' })).toBeVisible({ timeout: 15_000 });
+
+  await page.getByLabel('合并（重映射id，不覆盖）').check();
+  await page.locator('input[type="file"]').setInputFiles('e2e/fixtures/android-backup-v1.json');
+  // 导入成功，且如实提示 Android 端丢失的信息（本文件无 RPE，故提示为格式说明）
+  await expect(page.getByText(/合并导入成功/)).toBeVisible();
+
+  // 数据落库并可在历史页看到该动作（历史页展示的是估计 1RM 排行，
+  // 具体重量的校验放在下面的导出断言里）
+  await tab(page, /历史/).click();
+  await expect(page.getByText('杠铃卧推').first()).toBeVisible({ timeout: 10_000 });
+
+  // 导出后校验外键与动作分组映射（中文「手臂」按动作名细分）
+  const dl = page.waitForEvent('download');
+  await tab(page, /设置/).click();
+  await page.getByRole('button', { name: '导出 JSON 备份（全量）' }).click();
+  const file = await dl;
+  const out = '/tmp/gymo-after-android-import.json';
+  await file.saveAs(out);
+  const json = JSON.parse(fs.readFileSync(out, 'utf8'));
+  const ex = json.data.exercises as any[];
+  const byName = Object.fromEntries(ex.map((e) => [e.name, e]));
+  expect(byName['杠铃卧推'].muscleGroup).toBe('chest');
+  expect(byName['杠铃卧推'].equipment).toBe('barbell');
+  expect(byName['坐姿哑铃弯举'].muscleGroup).toBe('biceps');
+  expect(byName['仰卧杠铃臂屈伸'].muscleGroup).toBe('triceps');
+  const sets = json.data.sets as any[];
+  const weIds = new Set((json.data.workoutExercises as any[]).map((w) => w.id));
+  for (const s of sets) expect(weIds.has(s.workoutExerciseId)).toBe(true);
+  // 组类型映射：WARMUP/FAILURE 保真
+  const types = sets.map((s) => s.setType);
+  expect(types).toContain('warmup');
+  expect(types).toContain('failure');
+});

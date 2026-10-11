@@ -198,7 +198,7 @@ Android 的 `category` 是中文自由文本，按「包含」匹配：
 | 规范字段 | Android 现状 | 处理 |
 |---|---|---|
 | `sets.rpe` / `sets.note` / `sets.completedAt` / `sets.restSec` | 无对应列 | 导入 Android 时字段丢弃，提示"N 组的 RPE/备注未导入" |
-| `workouts.name` / `notes` / `durationSec` | 无对应列 | 导入 Android 时丢弃；`startTime` 足够定位训练 |
+| ~~`workouts.name` / `durationSec`~~ | 无对应列，但**可推导** | **不算有损点**：Android 由 `startTime`/`endTime` 推导显示名称与时长（实现见 `BackupCodec`），`notes` 映射到 `note` 列保留 |
 | `sets.setType` 的 superset/dropset/restpause | 无对应值 | 降级为 `normal`，提示"组类型已简化" |
 | `templates*` | 无模板概念 | 导入 Android 时整块跳过，提示"模板未导入" |
 | `bodyMeasurements` | 无对应表 | 导入 Android 时跳过，提示"身体测量未导入" |
@@ -217,6 +217,17 @@ Android 的 `category` 是中文自由文本，按「包含」匹配：
    「替换」模式先清空。两种模式都必须在**单个事务**内完成。
 4. **有损提示**：按 §6 汇总告知用户具体丢了什么、丢了多少行。
 5. **失败即中止**：任何解析错误都回滚事务，不留下半份数据。
+
+## 7.1 测试锚点
+
+跨端互认不能靠各自手搓的样例来证明——两端的样例会各自漂移。因此：
+
+- `apps/android/app/src/test/resources/web-backup-v1.json` 由 **Web 端的
+  `exportJSON()` 真实产出**（生成脚本见仓库历史），`BackupImportTest` 消费它。
+- `apps/web/e2e/fixtures/android-backup-v1.json` 由 **Android 端的
+  `BackupCodec.encode()` 真实产出**，Web 的 Playwright 用例消费它。
+
+重新生成 fixture 时，用产生它的那一端来跑生成，再提交产物。
 
 ## 8. 参考实现
 

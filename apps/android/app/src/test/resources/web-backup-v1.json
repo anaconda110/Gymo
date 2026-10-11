@@ -1,0 +1,155 @@
+{
+  "app": "Gymo",
+  "schemaVersion": 1,
+  "exportedAt": "2026-10-11T11:48:43.296Z",
+  "producer": "web",
+  "data": {
+    "exercises": [
+      {
+        "name": "Barbell Bench Press",
+        "muscleGroup": "chest",
+        "equipment": "barbell",
+        "unit": "kg",
+        "isCustom": false,
+        "createdAt": 1750000000000,
+        "id": 1
+      },
+      {
+        "name": "Triceps Pushdown",
+        "muscleGroup": "triceps",
+        "equipment": "cable",
+        "unit": "kg",
+        "isCustom": false,
+        "createdAt": 1750000000000,
+        "id": 2
+      }
+    ],
+    "workouts": [
+      {
+        "date": 1751000000000,
+        "name": "2026-06-27 推日",
+        "notes": "状态不错，卧推有进步",
+        "durationSec": 4200,
+        "createdAt": 1751000000000,
+        "id": 1
+      }
+    ],
+    "workoutExercises": [
+      {
+        "workoutId": 1,
+        "exerciseId": 1,
+        "order": 0,
+        "restSec": 150,
+        "supersetGroup": 1,
+        "id": 1
+      },
+      {
+        "workoutId": 1,
+        "exerciseId": 2,
+        "order": 1,
+        "restSec": 90,
+        "supersetGroup": 1,
+        "id": 2
+      }
+    ],
+    "sets": [
+      {
+        "workoutExerciseId": 1,
+        "order": 0,
+        "weight": 60,
+        "reps": 12,
+        "rpe": 6,
+        "setType": "warmup",
+        "isCompleted": true,
+        "completedAt": 1751000600000,
+        "note": "热身",
+        "id": 1
+      },
+      {
+        "workoutExerciseId": 1,
+        "order": 1,
+        "weight": 90,
+        "reps": 5,
+        "rpe": 9,
+        "setType": "normal",
+        "isCompleted": true,
+        "completedAt": 1751001000000,
+        "id": 2
+      },
+      {
+        "workoutExerciseId": 2,
+        "order": 0,
+        "weight": 35,
+        "reps": 10,
+        "rpe": 8,
+        "setType": "dropset",
+        "isCompleted": true,
+        "completedAt": 1751001100000,
+        "note": "最后一组递减",
+        "id": 3
+      },
+      {
+        "workoutExerciseId": 2,
+        "order": 1,
+        "weight": 25,
+        "reps": 15,
+        "setType": "failure",
+        "isCompleted": false,
+        "id": 4
+      }
+    ],
+    "templates": [
+      {
+        "name": "推日模板",
+        "description": "胸 + 三头",
+        "createdAt": 1750000000000,
+        "id": 1
+      }
+    ],
+    "templateExercises": [
+      {
+        "templateId": 1,
+        "exerciseId": 1,
+        "order": 0,
+        "targetSets": 4,
+        "targetReps": 6,
+        "targetWeight": 85,
+        "restSec": 150,
+        "id": 1
+      },
+      {
+        "templateId": 1,
+        "exerciseId": 2,
+        "order": 1,
+        "targetSets": 3,
+        "targetReps": 12,
+        "targetWeight": 35,
+        "restSec": 90,
+        "id": 2
+      }
+    ],
+    "settings": [
+      {
+        "key": "defaultRestSec",
+        "value": "120"
+      },
+      {
+        "key": "theme",
+        "value": "dark"
+      },
+      {
+        "key": "unit",
+        "value": "kg"
+      }
+    ],
+    "bodyMeasurements": [
+      {
+        "date": 1751000000000,
+        "bodyweight": 74.5,
+        "bodyfat": 18,
+        "waist": 82,
+        "id": 1
+      }
+    ]
+  }
+}

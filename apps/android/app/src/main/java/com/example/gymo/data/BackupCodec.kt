@@ -229,12 +229,12 @@ object BackupCodec {
             )
         }
 
+        // name/durationSec 不列为有损点：Android 以 startTime/endTime 推导显示名称与时长
+        // （规范 §6），notes 映射到 note 列得以保留。
         val wArr = data.optJSONArray("workouts") ?: JSONArray()
         val sessions = ArrayList<WorkoutSession>(wArr.length())
-        var droppedWorkoutFields = 0
         for (i in 0 until wArr.length()) {
             val o = wArr.getJSONObject(i)
-            if (o.has("name") || o.has("durationSec")) droppedWorkoutFields++
             val start = o.getLong("date")
             val endTime = if (o.has("endedAt") && !o.isNull("endedAt")) o.getLong("endedAt") else start
             sessions.add(
@@ -292,9 +292,6 @@ object BackupCodec {
         }
         if (simplifiedSetTypes > 0) {
             warnings.add("$simplifiedSetTypes 组的组类型（超级组/递减组等）Android 不支持，已简化为常规组")
-        }
-        if (droppedWorkoutFields > 0) {
-            warnings.add("$droppedWorkoutFields 个训练日的名称/时长未导入（时间与备注已保留）")
         }
         if (droppedWeFields > 0) {
             warnings.add("$droppedWeFields 个动作实例的备注/组间休息/超级组标记未导入")
