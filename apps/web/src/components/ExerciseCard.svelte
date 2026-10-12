@@ -333,7 +333,7 @@
     <span class="col-ok">完成</span>
   </div>
 
-  {#each sets as s, i}
+  {#each sets as s, i (s.id ?? i)}
     <div class="set-block" class:done={s.isCompleted}>
       <div class="set-row">
         <span class="col-c">{i + 1}</span>
@@ -348,7 +348,7 @@
           on:change={(e) => onRpeChange(s, e)} />
         <select class="col-type" value={s.setType} on:change={(e) => changeType(s, val(e))}
           aria-label="组类型">
-          {#each setTypeOptions as t}
+          {#each setTypeOptions as t (t)}
             <option value={t}>{setTypeLabel[t]}</option>
           {/each}
           {#if !setTypeOptions.includes(s.setType)}

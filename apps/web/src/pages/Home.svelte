@@ -1,8 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { go } from '../lib/router';
-  import { db } from '../lib/db';
-  import { createWorkout, listWorkouts, startFromTemplate, getTemplates } from '../lib/workout';
+    import { createWorkout, listWorkouts, startFromTemplate, getTemplates } from '../lib/workout';
   import type { Workout, Template } from '../lib/types';
   import { fmt } from '../lib/stats';
 
@@ -50,7 +49,7 @@
 {#if templates.length > 0}
   <div class="section-title">从模板开始</div>
   <div class="tmpl-row">
-    {#each templates as t}
+    {#each templates as t (t.id ?? t.name)}
       <button type="button" class="chip tmpl" on:click={() => startTemplate(t.id ?? 0)}>{t.name}</button>
     {/each}
   </div>
@@ -60,7 +59,7 @@
 {#if workouts.length === 0}
   <div class="list-empty">还没有训练记录，点击上方按钮开始第一次训练。</div>
 {:else}
-  {#each workouts.slice(0, 20) as w}
+  {#each workouts.slice(0, 20) as w (w.id ?? w.date)}
     <button type="button" class="card wl" on:click={() => go('workout', { id: w.id ?? 0 })}>
       <div class="between">
         <div>

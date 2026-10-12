@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { restTimer, startRest, addRest, stop } from '../lib/restTimer';
+  import { restTimer, addRest, stop } from '../lib/restTimer';
   import { fmt } from '../lib/stats';
 
   $: t = $restTimer;

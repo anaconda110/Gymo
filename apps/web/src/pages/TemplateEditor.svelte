@@ -91,7 +91,7 @@
   <input id="tmpl-desc" bind:value={template.description} on:change={saveName} />
 
   <div class="section-title">动作列表（{items.length}）</div>
-  {#each items as it}
+  {#each items as it (it.id ?? it.order)}
     <div class="card it">
       <div class="between">
         <div class="n">{exMap[it.exerciseId]?.name ?? '(已删除)'}</div>
@@ -132,7 +132,7 @@
       </div>
       <select bind:value={pickedId}>
         <option value={0}>选择动作…</option>
-        {#each allExercises as ex}<option value={ex.id}>{ex.name}</option>{/each}
+        {#each allExercises as ex (ex.id ?? ex.name)}<option value={ex.id}>{ex.name}</option>{/each}
       </select>
       <div class="row inputs" style="margin-top:10px">
         <label>组数<input class="narrow" type="number" bind:value={targetSets} /></label>

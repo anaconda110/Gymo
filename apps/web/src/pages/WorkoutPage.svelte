@@ -162,14 +162,14 @@
       <input placeholder="搜索动作…" bind:value={search} />
       <div class="chips">
         <button type="button" class="chip" class:active={filterGroup === ''} on:click={() => (filterGroup = '')}>全部</button>
-        {#each muscleGroups as g}
+        {#each muscleGroups as g (g)}
           <button type="button" class="chip" class:active={filterGroup === g} on:click={() => (filterGroup = g)}>
             {muscleGroupLabel[g]}
           </button>
         {/each}
       </div>
       <div class="ex-list">
-        {#each filtered as ex}
+        {#each filtered as ex (ex.id ?? ex.name)}
           <button type="button" class="ex-item" on:click={() => pickExercise(ex)}>
             <div class="ex-left">
               {#if ex.image}

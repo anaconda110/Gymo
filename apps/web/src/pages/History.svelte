@@ -12,7 +12,7 @@
   import type { Workout } from '../lib/types';
   import { fmt } from '../lib/stats';
   import { muscleGroupLabel, setTypeLabel } from '../lib/seed';
-  import { weeklyAggregates, monthlyAggregates, type PeriodAgg } from '../lib/p2';
+  import { weeklyAggregates, monthlyAggregates } from '../lib/p2';
 
   let mode: 'exercises' | 'log' | 'calendar' = 'exercises';
   let exStats: Awaited<ReturnType<typeof getAllExercisesWithStats>> = [];
@@ -156,7 +156,7 @@
 
 {#if mode === 'exercises'}
   <div class="section-title">动作 PR 排行（估计1RM）</div>
-  {#each exStats as row}
+  {#each exStats as row (row.exercise.id ?? row.exercise.name)}
     <button type="button" class="card ex-row" on:click={() => go('exercise', { id: row.exercise.id ?? 0 })}>
       <div class="ex-main">
         <div class="n">{row.exercise.name}</div>
@@ -173,7 +173,7 @@
 
   <div class="section-title">组类型统计</div>
   <div class="type-row">
-    {#each Object.entries(typeStats) as [k, v]}
+    {#each Object.entries(typeStats) as [k, v] (k)}
       <span class="tag">{typeLabelOf(k)}: {v}</span>
     {/each}
     {#if Object.keys(typeStats).length === 0}
@@ -182,7 +182,7 @@
   </div>
 {:else if mode === 'log'}
   <div class="section-title">训练日志</div>
-  {#each workouts as w}
+  {#each workouts as w (w.id ?? w.date)}
     <button type="button" class="card" on:click={() => go('workout', { id: w.id ?? 0 })}>
       <div class="n">{w.name}</div>
       <div class="dim">
@@ -210,12 +210,12 @@
 
     <div class="calendar" role="grid" aria-label="训练日历">
       <div class="week-head">
-        {#each WEEK_HEAD as h}
+        {#each WEEK_HEAD as h (h)}
           <div class="wh">{h}</div>
         {/each}
       </div>
       <div class="grid">
-        {#each cells as d}
+        {#each cells as d, ci (ci)}
           {@const key = d == null ? '' : ymdKey(viewYear, viewMonth, d)}
           {@const agg = d == null ? null : (dayMap.get(key) ?? null)}
           <button type="button" class="cell" class:empty={d == null} class:today={isToday(d)}
@@ -251,7 +251,7 @@
       <button type="button" class="btn btn-ghost small" on:click={() => (yearViewYear += 1)}>›</button>
     </div>
     <div class="year-grid" data-testid="year-view">
-      {#each yearMonths as ym}
+      {#each yearMonths as ym (ym.m)}
         <div class="ym" title={`${yearViewYear}-${String(ym.m + 1).padStart(2, '0')} · 容量 ${fmt(ym.vol, 0)} · ${ym.sessions} 次训练`}
           style={`background:${yearHeatColor(ym.vol)}`}>
           <div class="ym-label">{ym.m + 1}月</div>
@@ -269,7 +269,7 @@
   {:else}
     <div class="agg-bars" data-testid="weekly-agg">
       <svg class="agg-svg" viewBox="0 0 {weekAggs.length * 36 + 8} 64" preserveAspectRatio="xMidYMid meet" role="img" aria-label="每周容量柱状图">
-        {#each weekAggs as w, i}
+        {#each weekAggs as w, i (w.key)}
           {@const h = barHeight(w.volume, maxWeekVol)}
           <rect x={i * 36 + 4} y={54 - h} width="28" height={h} class="bar" />
           <text x={i * 36 + 18} y="62" text-anchor="middle" class="bar-x">{w.label.slice(5)}</text>
@@ -277,7 +277,7 @@
       </svg>
     </div>
     <div class="agg-cards">
-      {#each weekAggs as w}
+      {#each weekAggs as w (w.key)}
         <div class="agg-card">
           <div class="agg-k">{w.label}</div>
           <div class="agg-v">{fmt(w.volume, 0)}</div>
@@ -293,7 +293,7 @@
   {:else}
     <div class="agg-bars" data-testid="monthly-agg">
       <svg class="agg-svg" viewBox="0 0 {monthAggs.length * 36 + 8} 64" preserveAspectRatio="xMidYMid meet" role="img" aria-label="每月容量柱状图">
-        {#each monthAggs as w, i}
+        {#each monthAggs as w, i (w.key)}
           {@const h = barHeight(w.volume, maxMonthVol)}
           <rect x={i * 36 + 4} y={54 - h} width="28" height={h} class="bar" />
           <text x={i * 36 + 18} y="62" text-anchor="middle" class="bar-x">{w.label.slice(5)}</text>
@@ -301,7 +301,7 @@
       </svg>
     </div>
     <div class="agg-cards">
-      {#each monthAggs as w}
+      {#each monthAggs as w (w.key)}
         <div class="agg-card">
           <div class="agg-k">{w.label}</div>
           <div class="agg-v">{fmt(w.volume, 0)}</div>

@@ -19,7 +19,6 @@
     prMilestones,
     averageRestOfSets,
     relativeIntensityTrend,
-    bodyweightTrend,
     type NextGoal,
     type PRMilestone
   } from '../lib/p2';
@@ -83,7 +82,7 @@
     const v = (e.currentTarget as HTMLSelectElement).value as Formula1RM;
     void changeFormula(v);
   }
-  $: formula, refresh;
+  $: { void formula; void refresh; }
 
   // 相对强度模式：把 1RM 趋势转换为「1RM/体重」
   $: trendShown = relative && bwTrend.length > 0 ? relativeIntensityTrend(trend, bwTrend) : trend;
@@ -141,7 +140,7 @@
   <div class="row between formula-bar">
     <span class="dim">1RM 公式</span>
     <select value={formula} on:change={onFormulaChange} aria-label="1RM 公式">
-      {#each formulaList as f}
+      {#each formulaList as f (f)}
         <option value={f}>{formulaLabels[f]}</option>
       {/each}
     </select>
@@ -174,7 +173,7 @@
     <div class="list-empty">暂无 PR 记录</div>
   {:else}
     <ul class="pr-list" data-testid="pr-timeline">
-      {#each milestones as m}
+      {#each milestones as m (`${m.kind}-${m.date}`)}
         <li class="pr-item">
           <span class="pr-dot" style={`background:${kindColor(m.kind)}`}></span>
           <span class="pr-date">{dateStr(m.date)}</span>
@@ -187,7 +186,7 @@
 
   <div class="section-title">组类型统计</div>
   <div class="type-row">
-    {#each allTypes as t}
+    {#each allTypes as t (t)}
       {#if (typeStats[t] ?? 0) > 0}
         <span class="tag t-tag">{setTypeLabel[t]}: {typeStats[t] ?? 0}</span>
       {/if}
@@ -201,7 +200,7 @@
   {#if history.length === 0}
     <div class="list-empty">暂无历史记录</div>
   {:else}
-    {#each history as h}
+    {#each history as h (h.workoutId)}
       <div class="card hist">
         <div class="between">
           <div>
@@ -213,7 +212,7 @@
           </div>
         </div>
         <div class="sets-line">
-          {#each h.sets as s}
+          {#each h.sets as s (s.id ?? s.order)}
             <span class="set-pill" class:done={s.isCompleted}>
               {s.weight}×{s.reps}{s.rpe ? `@${s.rpe}` : ''}{s.setType && s.setType !== 'normal' && s.setType !== 'working' ? `·${setTypeLabel[s.setType]}` : ''}
             </span>

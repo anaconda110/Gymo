@@ -32,6 +32,9 @@ jobs:
       - name: 类型检查
         run: npm run check
 
+      - name: 代码检查（ESLint）
+        run: npm run lint
+
       - name: 单元测试
         run: npm run test:unit
 

@@ -3,8 +3,7 @@
   import { exportJSON, exportHistoryCSV, importJSON, download, readFileText } from '../lib/exportImport';
   import { db } from '../lib/db';
   import { seedIfEmpty } from '../lib/seed';
-  import { go } from '../lib/router';
-  import { formulaList, formulaLabels, type Formula1RM } from '../lib/stats';
+    import { formulaList, formulaLabels, type Formula1RM } from '../lib/stats';
   import { setTimerPrefs } from '../lib/restTimer';
 
   let unit: 'kg' | 'lb' = $settings.unit;
@@ -118,7 +117,7 @@
   <div class="row between" style="margin-top:10px">
     <span>1RM 估算公式</span>
     <select bind:value={formula} on:change={saveFormula} aria-label="1RM 公式">
-      {#each formulaList as f}
+      {#each formulaList as f (f)}
         <option value={f}>{formulaLabels[f]}</option>
       {/each}
     </select>

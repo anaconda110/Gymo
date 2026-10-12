@@ -4,18 +4,14 @@
   import { go } from '../lib/router';
   import { getTemplates, startFromTemplate } from '../lib/workout';
   import { exportTemplateJSON, importTemplateJSON, download, readFileText } from '../lib/exportImport';
-  import type { Template, TemplateExercise, Exercise } from '../lib/types';
+  import type { Template } from '../lib/types';
 
   let templates: Template[] = [];
-  let allExercises: Exercise[] = [];
-  let exMap: Record<number, Exercise> = {};
   let teCounts: Record<number, number> = {};
   let importMsg = '';
 
   async function refresh() {
     templates = await getTemplates();
-    allExercises = await db.exercises.toArray();
-    exMap = Object.fromEntries(allExercises.map((e) => [e.id!, e]));
     const te = await db.templateExercises.toArray();
     teCounts = {};
     for (const t of te) {
@@ -85,7 +81,7 @@
 {#if templates.length === 0}
   <div class="list-empty">还没有模板，点击右上角新建，或从本地文件导入。</div>
 {:else}
-  {#each templates as t}
+  {#each templates as t (t.id ?? t.name)}
     <div class="card tcard">
       <button type="button" class="ex-main" on:click={() => go('template-edit', { id: t.id ?? 0 })}>
         <div class="n">{t.name}</div>

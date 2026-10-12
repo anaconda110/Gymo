@@ -54,7 +54,7 @@
       <line class="axis" x1={PAD_L} y1={PAD_T} x2={PAD_L} y2={PAD_T + plotH} />
       <line class="axis" x1={PAD_L} y1={PAD_T + plotH} x2={W - PAD_R} y2={PAD_T + plotH} />
 
-      {#each [0, 0.5, 1] as t}
+      {#each [0, 0.5, 1] as t (t)}
         <g>
           <line class="grid" x1={PAD_L} y1={PAD_T + plotH * (1 - t)} x2={W - PAD_R} y2={PAD_T + plotH * (1 - t)} />
           <text class="tick" x={PAD_L - 4} y={PAD_T + plotH * (1 - t) + 3} text-anchor="end">
@@ -65,14 +65,14 @@
 
       <path class="line" d={path} style="stroke:{color}" />
 
-      {#each sampled as p, i}
+      {#each sampled as p, i (p.x)}
         <circle class="pt" cx={xScale(i, sampled.length)} cy={yScale(p.y)} r="2.6" style="fill:{color}">
           <title>{dateLabel(p.x)} · {fmt(p.y)}</title>
         </circle>
       {/each}
 
       {#if sampled.length}
-        {#each [0, Math.floor((sampled.length - 1) / 2), sampled.length - 1] as i}
+        {#each [0, Math.floor((sampled.length - 1) / 2), sampled.length - 1] as i (i)}
           {#if i >= 0 && i < sampled.length}
             <text class="tick" x={xScale(i, sampled.length)} y={H - 6} text-anchor="middle">
               {dateLabel(sampled[i].x)}

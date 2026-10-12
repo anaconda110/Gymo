@@ -1,7 +1,6 @@
 // 数据导入导出 —— JSON 全量备份恢复 + CSV 导出（动作历史）
 import { db } from './db';
 import type {
-  WorkoutView,
   Template,
   TemplateExercise,
   MuscleGroup,

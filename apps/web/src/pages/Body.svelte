@@ -135,7 +135,7 @@
       .map((m) => ({ x: m.date, y: fieldVal(m, key) as number }));
   }
 
-  $: chartFields = fields.filter((f) => f.chart);
+  const chartFields = fields.filter((f) => f.chart);
 
   // 趋势图数据随 list 变化重算：直接引用 list 让 Svelte 建立响应式依赖，
   // 否则 #each chartFields 不会在 refresh() 后重渲染，导致新增测量后折线图不出现。
@@ -149,7 +149,7 @@
 
 <p class="dim intro">记录体重、体脂率与各围度，纯本地存储；各指标以内联 SVG 绘制趋势。体重单位随设置（当前 {unit}）。</p>
 
-{#each charts as c}
+{#each charts as c (c.f.key)}
   {#if c.pts.length > 0}
     <div class="section-title">{shortLabel(c.f.label)}趋势</div>
     <LineChart points={c.pts} yLabel={shortLabel(c.f.label)} />
@@ -161,7 +161,7 @@
   <div class="list-empty">暂无身体测量记录</div>
 {:else}
   <div class="section-title">历史记录</div>
-  {#each list as m}
+  {#each list as m (m.id ?? m.date)}
     <div class="card m-row">
       <div class="m-head">
         <button type="button" class="m-date" on:click={() => edit(m)}>{dateStr(m.date)}</button>
@@ -171,7 +171,7 @@
         </div>
       </div>
       <div class="m-fields">
-        {#each fields as f}
+        {#each fields as f (f.key)}
           {#if fieldVal(m, f.key) != null}
             <span class="tag">{shortLabel(f.label)}: {fmtN(fieldVal(m, f.key))}</span>
           {/if}
@@ -186,7 +186,7 @@
   <label class="lbl" for="bm-date">日期</label>
   <input id="bm-date" type="date" value={dateInputValue(editing?.date ?? Date.now())} on:change={setDate} />
 
-  {#each fields as f}
+  {#each fields as f (f.key)}
     <label class="lbl" for={`bm-${f.key}`}>{f.label}</label>
     <input id={`bm-${f.key}`} type="number" inputmode="decimal" min="0" step="any"
       value={editing ? (fieldVal(editing, f.key) ?? '') : ''} placeholder="—" on:change={(e) => setField(e, f.key)} />

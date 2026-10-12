@@ -110,7 +110,7 @@
 
       <!-- 左轴刻度（1RM / 相对强度） -->
       {#if show1RM && rmMax > 0}
-        {#each [0, 0.5, 1] as t}
+        {#each [0, 0.5, 1] as t (t)}
           <g>
             <line class="grid" x1={PAD_L} y1={yScale(rmMax * t, rmMax)} x2={W - PAD_R} y2={yScale(rmMax * t, rmMax)} />
             <text class="tick-l" x={PAD_L - 4} y={yScale(rmMax * t, rmMax) + 3} text-anchor="end">
@@ -121,7 +121,7 @@
       {/if}
       <!-- 右轴刻度（容量） -->
       {#if showVol && volMax > 0}
-        {#each [0, 0.5, 1] as t}
+        {#each [0, 0.5, 1] as t (t)}
           <text class="tick-r" x={W - PAD_R} y={yScale(volMax * t, volMax) + 3} text-anchor="start">
             {fmt(volMax * t, 0)}
           </text>
@@ -131,7 +131,7 @@
       <!-- 容量线（绿） -->
       {#if showVol && volValues.length}
         <path class="line vol" d={linePath(volValues, volMax)} />
-        {#each volValues as v, i}
+        {#each volValues as v, i (dates[i])}
           <circle class="pt vol" cx={xScale(i, volValues.length)} cy={yScale(v, volMax)} r="2.5">
             <title>{dateLabel(dates[i])} · 容量 {fmt(v, 0)}</title>
           </circle>
@@ -141,7 +141,7 @@
       <!-- 1RM / 相对强度线（橙） -->
       {#if show1RM && rmValues.length}
         <path class="line rm" d={linePath(rmValues, rmMax)} />
-        {#each rmValues as v, i}
+        {#each rmValues as v, i (dates[i])}
           <circle class="pt rm" cx={xScale(i, rmValues.length)} cy={yScale(v, rmMax)} r="2.5">
             <title>{dateLabel(dates[i])} · {rmLabel} {fmt(v, relative ? 2 : 1)}{relative ? '' : ` ${unitLabel}`}</title>
           </circle>
@@ -151,7 +151,7 @@
       <!-- 体重叠加线（蓝，次轴独立缩放，虚线） -->
       {#if hasBW && showBW && bwValues.length}
         <path class="line bw" d={bwPath} />
-        {#each bwValues as v, i}
+        {#each bwValues as v, i (bwPoints[i].x)}
           <circle class="pt bw" cx={xScale(i, bwValues.length)} cy={bwY(v)} r="2.2">
             <title>{dateLabel(bwPoints[i].x)} · 体重 {fmt(v, 1)}</title>
           </circle>
@@ -160,7 +160,7 @@
 
       <!-- X 轴日期：首/中/末三点 -->
       {#if dates.length}
-        {#each [0, Math.floor((dates.length - 1) / 2), dates.length - 1] as i}
+        {#each [0, Math.floor((dates.length - 1) / 2), dates.length - 1] as i (i)}
           {#if i >= 0 && i < dates.length}
             <text class="tick-x" x={xScale(i, dates.length)} y={H - 6} text-anchor="middle">
               {dateLabel(dates[i])}

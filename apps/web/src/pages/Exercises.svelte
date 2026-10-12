@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import { db } from '../lib/db';
   import { go } from '../lib/router';
-  import type { Exercise, MuscleGroup, Equipment, Unit } from '../lib/types';
+  import type { Exercise } from '../lib/types';
   import { muscleGroupLabel, equipmentLabel, muscleGroups, equipments } from '../lib/seed';
 
   let exercises: Exercise[] = [];
@@ -95,14 +95,14 @@
 
 <div class="chips">
   <button type="button" class="chip" class:active={filterGroup === ''} on:click={() => (filterGroup = '')}>全部</button>
-  {#each muscleGroups as g}
+  {#each muscleGroups as g (g)}
     <button type="button" class="chip" class:active={filterGroup === g} on:click={() => (filterGroup = g)}>
       {muscleGroupLabel[g]}
     </button>
   {/each}
 </div>
 
-{#each filtered as ex}
+{#each filtered as ex (ex.id ?? ex.name)}
   <div class="card ex-row">
     <button type="button" class="ex-main" on:click={() => go('exercise', { id: ex.id ?? 0 })}>
       {#if ex.image}
@@ -138,12 +138,12 @@
 
       <label class="lbl" for="ex-group">部位</label>
       <select id="ex-group" bind:value={editing.muscleGroup}>
-        {#each muscleGroups as g}<option value={g}>{muscleGroupLabel[g]}</option>{/each}
+        {#each muscleGroups as g (g)}<option value={g}>{muscleGroupLabel[g]}</option>{/each}
       </select>
 
       <label class="lbl" for="ex-equip">器械</label>
       <select id="ex-equip" bind:value={editing.equipment}>
-        {#each equipments as e}<option value={e}>{equipmentLabel[e]}</option>{/each}
+        {#each equipments as e (e)}<option value={e}>{equipmentLabel[e]}</option>{/each}
       </select>
 
       <label class="lbl" for="ex-unit">单位</label>

@@ -11,6 +11,7 @@
     "build": "svelte-check --tsconfig ./tsconfig.json && vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
+    "lint": "eslint .",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
     "gen:icons": "node scripts/gen-icons.mjs",
@@ -18,14 +19,20 @@
     "test:e2e:free-port": "npm run build && GYMO_E2E_PORT=4183 playwright test"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@playwright/test": "^1.62.1",
     "@sveltejs/vite-plugin-svelte": "^3.1.2",
     "@tsconfig/svelte": "^5.0.4",
+    "eslint": "^9.39.5",
+    "eslint-plugin-svelte": "^3.23.1",
     "fake-indexeddb": "^6.2.5",
+    "globals": "^15.15.0",
     "svelte": "^4.2.19",
     "svelte-check": "^3.8.6",
+    "svelte-eslint-parser": "^1.9.0",
     "tslib": "^2.7.0",
     "typescript": "^5.5.4",
+    "typescript-eslint": "^8.71.1",
     "vite": "^5.4.8",
     "vite-plugin-pwa": "^0.20.5",
     "vitest": "^1.6.1"

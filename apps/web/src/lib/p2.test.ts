@@ -127,7 +127,7 @@ describe('downsampleTrend / downsamplePoints', () => {
   });
 });
 
-function dayAgg(key: string, ts: number, volume: number, sessions = 1): DayAgg {
+function dayAgg(key: string, ts: number, volume: number, _sessions = 1): DayAgg {
   return { date: key, ts, volume, sets: 1, workoutIds: [ts] };
 }
 
