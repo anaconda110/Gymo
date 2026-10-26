@@ -50,7 +50,7 @@ app/src/main/java/com/example/gymo/
 ### 环境要求
 
 - Android Studio
-- JDK 17+
+- JDK 21（AGP 最低 17）
 - Android SDK（minSdk 详见 `app/build.gradle.kts`）
 
 ### 步骤

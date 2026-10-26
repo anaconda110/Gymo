@@ -45,7 +45,7 @@ jobs:
         run: npm run test:e2e
 
   android:
-    name: Android（assembleDebug）
+    name: Android（assembleDebug + 单测）
     runs-on: ubuntu-latest
     defaults:
       run:

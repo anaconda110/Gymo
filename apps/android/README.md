@@ -50,7 +50,7 @@ app/src/main/java/com/example/gymo/
 ### Prerequisites
 
 - Android Studio
-- JDK 17+
+- JDK 21 (AGP minimum: 17)
 - Android SDK (see `app/build.gradle.kts` for minSdk)
 
 ### Steps

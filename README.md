@@ -31,16 +31,20 @@ npm run test:e2e  # 构建产物 + 无头浏览器 e2e 闭环
 
 ```bash
 cd apps/android
-./gradlew assembleDebug    # 需 Android SDK 与 JDK 17+
+./gradlew assembleDebug    # 需 Android SDK 与 JDK 21（AGP 最低 17）
 ```
 
 或用 Android Studio 打开 `apps/android/` 等待 Gradle 同步后运行。最低 Android 8.0（API 28）。
 
-## 两端的数据不互通
+## 两端的数据不自动同步，备份可互认
 
-两个客户端都支持 JSON 备份/恢复，但**格式不同、互不兼容**：Android 导出的是 Room 实体结构，Web 导出的是 Dexie 表结构。同一个文件无法在另一端起效。
+两个客户端仍是独立的本地应用，**不共享存储、不自动同步**。但 JSON 备份统一使用
+信封 v1（`app` / `schemaVersion` / `producer` / `data`），任意一端导出的文件都能
+在另一端导入（合并或替换）。
 
-如果要跨端迁移，目前需要自行转换格式；这是已知限制，不是配置问题。
+接收端没有对应概念的字段不会被静默丢弃，而是给出明确告警（例如 Web → Android
+时的 RPE、模板与身体测量）。字段映射和已知有损点见
+[`docs/BACKUP-FORMAT.md`](./docs/BACKUP-FORMAT.md)；旧版 Android 备份仍可导入。
 
 ## 测试与 CI
 
@@ -50,8 +54,9 @@ cd apps/android
 | 端 | 命令 | 内容 |
 |---|---|---|
 | Web | `cd apps/web && npm run check` | svelte-check 类型检查 |
-| Web | `cd apps/web && npm run test:unit` | 42 条纯函数单测（Vitest） |
-| Web | `cd apps/web && npm run test:e2e` | 19 条 Playwright 端到端（构建产物 + 无头 Chromium） |
+| Web | `cd apps/web && npm run lint` | ESLint 代码检查 |
+| Web | `cd apps/web && npm run test:unit` | 58 条纯函数/迁移单测（Vitest） |
+| Web | `cd apps/web && npm run test:e2e` | 20 条 Playwright 端到端（构建产物 + 无头 Chromium） |
 | Android | `cd apps/android && ./gradlew assembleDebug testDebugUnitTest` | 编译 + 单测（需本地 SDK） |
 
 Android 构建产物（debug APK）在 CI run 页面以 artifact 提供下载。发布签名
@@ -64,11 +69,12 @@ Android 构建产物（debug APK）在 CI run 页面以 artifact 提供下载。
 - [`docs/BACKUP-FORMAT.md`](./docs/BACKUP-FORMAT.md) —— **跨端备份格式规范**：两个客户端共同的 JSON 信封、字段与取值映射、导入器行为要求。
 - [`docs/RELEASING.md`](./docs/RELEASING.md) —— 发布手册（签名、版本号、Release 流程）。
 - [`CHANGELOG.md`](./CHANGELOG.md) —— 版本变更记录。
-- [`THIRD-PARTY-NOTICES.md`](./THIRD-PARTY-NOTICES.md) —— 第三方依赖许可与版权声明。
+- [`apps/web/THIRD-PARTY-NOTICES.md`](./apps/web/THIRD-PARTY-NOTICES.md) —— Web 端第三方依赖许可与版权声明。
 - 各端自己的文档：`apps/android/README_zh.md`、`apps/android/REQUIREMENTS.md`（需求路线图）、`apps/web/docs/项目文档.md`（完整项目文档）。
 
 ## 许可
 
-MIT License，见 [LICENSE](./LICENSE)。第三方依赖见 [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md)。
+MIT License，见 [LICENSE](./LICENSE)。Web 端第三方依赖见
+[`apps/web/THIRD-PARTY-NOTICES.md`](./apps/web/THIRD-PARTY-NOTICES.md)。
 
 「训练容量 = 组数 × 重量 × 次数」等概念属力量训练领域的通行方法，本项目是对其的独立实现，与任何同类产品的开发者无关联、未获其授权或背书。

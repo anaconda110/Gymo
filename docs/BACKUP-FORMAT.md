@@ -232,7 +232,8 @@ Android 的 `category` 是中文自由文本，按「包含」匹配：
 ## 8. 参考实现
 
 - Web 导出/导入（信封 v1 的原生实现）：`apps/web/src/lib/exportImport.ts`
-- Android 导出/导入：`apps/android/app/src/main/java/com/example/gymo/data/BackupManager.kt`
-  （当前为 legacy-android 形态，迁移到本规范的工作见 issue #1）
+- Android 导出/导入（信封 v1 + legacy-android 读取兼容）：
+  `apps/android/app/src/main/java/com/example/gymo/data/BackupCodec.kt` 与
+  `BackupManager.kt`
 
 实现与本规范不一致时，以本规范为准，并修正实现。
