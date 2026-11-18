@@ -44,6 +44,26 @@ Android 端曾在 Windows 机器上打出签名 release 包（v1.1.0，versionCo
 
 ## 遗留（需用户自行完成，涉及密钥故不代办）
 
+> **2026-11-18 已解决**，走向见下方「修订」。
+
 把 Windows 工作区 stash 中的签名参数填入 `apps/android/keystore.properties`
 （`gymo-release.jks` 实物与明文配置都在那边，本仓库不含其副本），随后该
 stash 可弃。填好后的本机 `./gradlew assembleRelease` 即产出可安装的签名包。
+
+## 修订
+
+### 2026-11-18：签名密钥重建
+
+「遗留」一节的前提已不成立：Windows 工作区的口令 stash 消失（`refs/stash`
+不存在、fsck 亦无悬挂对象），口令无法取回。经用户明确授权，**重建签名密钥**：
+
+- 新密钥：PKCS12 `gymo-release.jks`（alias `gymo`，RSA 2048，有效期 30 年），
+  位于持有密钥的机器 `/home/oraw/keys/`，口令另存于同目录文件（0600）；
+  `keystore.properties` 按本文决策 2 配置完成。旧密钥（签署 v1.1.0）退役。
+- 跨密钥不能在线升级：已装 v1.1.0 的设备升级到 v1.3.0+ 需卸载重装，数据先
+  JSON 备份导出、装新版后导入（信封 v1，见 ADR 0005）。
+- 决策 1 的 versionCode 序列延续：v1.3.0 = 3；决策 3（CI 只出 debug 包）
+  与决策 4（applicationId 不变）不受影响。
+- 同日补发两个历史 Release：v1.1.0 附从旧工作区找回的原始签名 APK
+  （SHA-256 `dedc7c33…94a59004`，与 tag 对应的 versionCode 2 / versionName
+  1.1.0）；v1.2.0 当时未构建产物，按 issue #2 预案只发 changelog。

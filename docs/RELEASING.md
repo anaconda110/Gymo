@@ -5,33 +5,25 @@
 
 ## 前置：一次性配置签名（在持有密钥的机器上）
 
-签名密钥（`gymo-release.jks`）与其口令只存在于持有它们的机器上——当前是
-Windows 工作区的 `D:\Program\05.android\Gymo`（密钥本体在仓库根，口令在该
-工作区的 git stash 里）。**这些内容永不进入版本库。**
+签名密钥与其口令只存在于持有它们的机器上。**这些内容永不进入版本库。**
 
-在该机器上：
+**当前状态（2026-11-18）**：持有密钥的机器为 WSL 工作区。签名库为重建后的
+`/home/oraw/keys/gymo-release.jks`（PKCS12，alias `gymo`，RSA 2048，有效期
+30 年），口令在同目录 `gymo-keystore-password.txt`（0600）；`apps/android/keystore.properties`
+已配置完成并指向该密钥库。本机 `./gradlew assembleRelease` 即产出签名包，
+`keystore.properties` 不存在时（如 CI）产出未签名包。
 
-1. 克隆/更新仓库，进入 `apps/android/`。
-2. 复制模板并填入真实值：
-
-   ```bash
-   cp keystore.properties.example keystore.properties
-   # 编辑 keystore.properties：storeFile / storePassword / keyAlias / keyPassword
-   # storeFile 相对 apps/android/ 解析，例如 ../../gymo-release.jks 或绝对路径
-   ```
-
-3. 验证签名可用：
-
-   ```bash
-   ./gradlew assembleRelease
-   ls app/build/outputs/apk/release/app-release.apk
-   ```
-
-   `keystore.properties` 存在时自动启用 release 签名；不存在时产出未签名包。
-   确认无误后，Windows 侧那份只含签名配置的 stash 即可弃用。
+换到新机器发布时：复制 `gymo-release.jks` 与口令过去（或重建
+`keystore.properties` 指向其路径），确认 `./gradlew assembleRelease` 产物
+签名可验证后继续。
 
 > 密钥遗失 = 已发布版本无法在线升级（Android 不允许换签名）。请在离线介质上
-> 保留一份备份，口令另行保管。
+> 保留一份 `gymo-release.jks` 备份，口令另行保管、不要与密钥放在同一处。
+
+> 历史注记：v1.1.0 由旧密钥（Windows `D:\Program\05.android\Gymo\gymo-release.jks`）
+> 签署，其口令原记载于该工作区的 git stash——stash 已消失、无法取回，故
+> 2026-11-18 经授权重建了新密钥（决策见 ADR 0004 修订）。旧签名版本升级到
+> 新签名版本需卸载重装，数据先用 JSON 备份导出、装新版后导入。
 
 ## 每次发布
 
